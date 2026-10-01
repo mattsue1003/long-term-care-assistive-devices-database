@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>長照輔具資料庫｜依功能、GMFCS、食衣住行樂查詢</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF4F4; --surface:#FFFFFF; --surface2:#F6FAFA; --ink:#12343B; --muted:#4E6A70; --line:#D3E2E3;
+  --teal:#028090; --teal-soft:#D7EEF0; --orange:#E8552D; --amber:#F4A93C; --amber-soft:#FDEFD6;
+  --c-food:#E8552D; --c-cloth:#D98A12; --c-home:#028090; --c-move:#2F6FA6; --c-play:#A9467E;
+  --shadow:0 2px 0 rgba(18,52,59,.08);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F2328; --surface:#16313A; --surface2:#1B3A44; --ink:#E6F1F2; --muted:#A3BEC2; --line:#2A4D57;
+    --teal:#3FB8C6; --teal-soft:#1D4A52; --orange:#FF7A52; --amber:#F6B95A; --amber-soft:#4A3A1C;
+    --c-food:#FF7A52; --c-cloth:#F2A93B; --c-home:#3FB8C6; --c-move:#6FA8DA; --c-play:#D97BB1;
+    --shadow:0 2px 0 rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F2328; --surface:#16313A; --surface2:#1B3A44; --ink:#E6F1F2; --muted:#A3BEC2; --line:#2A4D57;
+  --teal:#3FB8C6; --teal-soft:#1D4A52; --orange:#FF7A52; --amber:#F6B95A; --amber-soft:#4A3A1C;
+  --c-food:#FF7A52; --c-cloth:#F2A93B; --c-home:#3FB8C6; --c-move:#6FA8DA; --c-play:#D97BB1;
+  --shadow:0 2px 0 rgba(0,0,0,.3);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;font-size:17px;line-height:1.7}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+a{color:inherit}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+
+/* hero */
+header.hero{padding:36px 0 22px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:36px;align-items:end}
+.brand{font-weight:700;color:var(--teal);font-size:15px;margin:0 0 6px}
+h1{font-size:clamp(34px,5vw,56px);line-height:1.12;margin:0 0 14px;font-weight:900;letter-spacing:.02em}
+.lede{color:var(--muted);margin:0;max-width:34em}
+.theme-btn{position:absolute;right:20px;top:calc(14px + env(safe-area-inset-top,0px));background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 14px;font-size:14px}
+
+/* GMFCS staircase */
+.stairs-box{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 16px 12px;box-shadow:var(--shadow)}
+.stairs-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.stairs-head h2{font-size:18px;margin:0}
+.link-btn{background:none;border:none;color:var(--teal);font-weight:700;padding:0;text-decoration:underline;text-underline-offset:3px;font-size:15px}
+.stairs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;align-items:end;height:200px}
+.step{display:flex;flex-direction:column;justify-content:flex-start;text-align:left;border:none;border-radius:10px 10px 4px 4px;padding:10px 10px 8px;background:var(--teal-soft);color:var(--ink);transition:background .2s,transform .2s}
+.step:hover{transform:translateY(-3px)}
+.step b{font-size:28px;line-height:1;font-weight:900;color:var(--teal)}
+.step span{font-size:13.5px;line-height:1.35;margin-top:6px;font-weight:500}
+.step[aria-pressed="true"]{background:var(--amber)}
+.step[aria-pressed="true"] b{color:#12343B}
+.step[aria-pressed="true"] span{color:#12343B}
+.stairs-note{font-size:13px;color:var(--muted);margin:10px 0 0}
+.gm-explain{display:none;margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;font-size:15px}
+.gm-explain.open{display:block}
+.gm-explain dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px}
+.gm-explain dt{font-weight:900;color:var(--teal)}
+.gm-explain dd{margin:0}
+
+/* filters */
+.filters{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;margin:8px 0 22px;box-shadow:var(--shadow)}
+.f-row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.f-row + .f-row{margin-top:16px}
+.f-label{font-weight:700;font-size:15px;min-width:5.5em;padding-top:8px;color:var(--muted)}
+.domains{display:flex;gap:10px;flex-wrap:wrap;flex:1}
+.dom{display:flex;align-items:center;gap:10px;border:2px solid var(--line);background:var(--surface2);border-radius:14px;padding:6px 14px 6px 6px}
+.dom .g{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:22px;font-weight:900;color:#fff;background:var(--dc,var(--teal))}
+.dom .t{display:flex;flex-direction:column;line-height:1.2;text-align:left}
+.dom .t small{color:var(--muted);font-size:13px}
+.dom[aria-pressed="true"]{border-color:var(--dc,var(--teal));background:var(--surface)}
+.dom.all .g{background:var(--ink);font-size:15px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+.chip{border:1.5px solid var(--line);background:var(--surface2);border-radius:999px;padding:5px 14px;font-size:15px}
+.chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.search{flex:1;min-width:220px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search input{flex:1;min-width:200px;border:2px solid var(--line);border-radius:12px;padding:9px 14px;background:var(--surface2)}
+.search input:focus{border-color:var(--teal);outline:none}
+.toggle{border:2px solid var(--line);background:var(--surface2);border-radius:12px;padding:8px 14px;font-weight:500}
+.toggle[aria-pressed="true"]{border-color:var(--orange);color:var(--orange)}
+.clear{border:none;background:none;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+
+.status{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.status p{margin:0;font-weight:700}
+.status .active{color:var(--muted);font-size:14px;font-weight:400}
+
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-bottom:40px}
+.card{position:relative;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--dc,var(--teal));border-radius:6px 14px 14px 6px;padding:14px 16px 14px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.card:hover{border-color:var(--dc,var(--teal))}
+.card h3{margin:0;font-size:20px;line-height:1.35;padding-right:30px}
+.card .sum{margin:0;color:var(--muted);font-size:15px;line-height:1.6}
+.card .meta{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.card .doms{display:flex;gap:4px}
+.mini-dom{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:14px;font-weight:900;background:var(--dc)}
+.gbar{display:flex;gap:3px;align-items:flex-end}
+.gbar i{display:block;width:16px;border-radius:3px 3px 1px 1px;background:var(--line)}
+.gbar i.on{background:var(--amber)}
+.gbar-wrap{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-size:13px;background:var(--teal-soft);border-radius:6px;padding:1px 8px}
+.card .star{position:absolute;right:12px;top:10px;font-size:20px;color:var(--orange)}
+.card .ntype{font-size:13px;color:var(--muted)}
+.empty{grid-column:1/-1;background:var(--surface);border:2px dashed var(--line);border-radius:14px;padding:30px;text-align:center}
+.empty button{margin-top:10px}
+
+/* drawer */
+.overlay{position:fixed;inset:0;background:rgba(10,30,35,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.overlay.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(760px,100%);background:var(--bg);z-index:21;transform:translateX(102%);transition:transform .28s ease;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer.open{transform:none}
+.d-head{background:var(--surface);border-bottom:1px solid var(--line);padding:16px 20px;display:flex;gap:14px;align-items:flex-start}
+.d-head .big{width:58px;height:58px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:28px;font-weight:900;color:#fff;background:var(--dc)}
+.d-head h2{margin:0;font-size:26px;line-height:1.3}
+.d-head .sub{margin:2px 0 0;color:var(--muted);font-size:14px}
+.d-actions{margin-left:auto;display:flex;gap:6px;flex:none}
+.icon-btn{border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 10px;font-size:14px;white-space:nowrap}
+.icon-btn.fav[aria-pressed="true"]{color:var(--orange);border-color:var(--orange)}
+.d-body{overflow-y:auto;padding:18px 20px 30px;flex:1}
+.d-sum{font-size:18px;margin:0 0 16px}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.facts dt{font-weight:700;color:var(--muted);font-size:15px}
+.facts dd{margin:0}
+.gfull{display:flex;gap:4px;flex-wrap:wrap}
+.gfull span{border-radius:6px;padding:0 9px;font-weight:700;font-size:14px;background:var(--line);color:var(--muted)}
+.gfull span.on{background:var(--amber);color:#12343B}
+.media{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 22px}
+.mbtn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;border-radius:12px;padding:9px 16px;font-weight:700;font-size:15px;border:2px solid transparent}
+.mbtn.gg{background:var(--surface);border-color:var(--line)}
+.mbtn.yt{background:#C4302B;color:#fff}
+.mbtn svg{flex:none}
+.mbtn.small{padding:6px 12px;font-size:14px;border-radius:10px}
+.d-body h3{font-size:19px;margin:0 0 10px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 14px;font-weight:500}
+.tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.tpanel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.tpanel[hidden]{display:none}
+.tpanel h4{margin:0 0 12px;font-size:21px}
+.blk{display:grid;grid-template-columns:5.2em 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.blk:first-of-type{border-top:none;padding-top:0}
+.blk .k{font-weight:900;font-size:15px;border-radius:8px;padding:2px 0;text-align:center;align-self:start}
+.blk.op .k{background:var(--teal-soft);color:var(--teal)}
+.blk.help .k{background:var(--amber-soft);color:var(--ink)}
+.blk.care .k{background:var(--orange);color:#fff}
+.blk p{margin:0}
+.tpanel .media{margin:14px 0 0}
+.disclaimer{font-size:14px;color:var(--muted);margin:22px 0 0;border-left:4px solid var(--line);padding-left:12px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--muted);font-size:14px}
+footer p{margin:0 0 6px;max-width:60em}
+footer .sign{color:var(--ink);font-weight:700}
+
+/* nav & views */
+.nav{position:sticky;top:0;z-index:10;background:var(--bg);padding:10px 0 12px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;border-bottom:2px solid var(--line);margin:0 0 18px}
+.vtabs{display:flex;gap:6px;flex-wrap:wrap}
+.vtab{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:7px 16px;font-weight:700;font-size:16px}
+.vtab[aria-selected="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.ident{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;border:2px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.seg button{border:none;background:none;padding:6px 12px;font-weight:500;font-size:15px}
+.seg button[aria-pressed="true"]{background:var(--amber);color:#12343B;font-weight:700}
+.view[hidden]{display:none}
+.badges{display:flex;gap:5px;flex-wrap:wrap}
+.badge{font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;border:1.5px solid}
+.b-lt{color:var(--teal);border-color:var(--teal)}
+.b-dis{color:var(--c-play);border-color:var(--c-play)}
+.b-smart{color:var(--c-move);border-color:var(--c-move)}
+.b-self{color:var(--muted);border-color:var(--line)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:18px;box-shadow:var(--shadow)}
+.panel h2{margin:0 0 10px;font-size:24px}
+.panel h3{margin:18px 0 8px;font-size:19px}
+.panel p{margin:0 0 10px;max-width:58em}
+.panel ul{margin:0 0 10px;padding-left:1.3em}
+.panel li{margin-bottom:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.plan{border:2px solid var(--line);border-radius:14px;padding:16px;background:var(--surface2)}
+.plan h3{margin-top:0}
+.plan .big-num{font-size:34px;font-weight:900;color:var(--teal);line-height:1.1}
+.plan.p2 .big-num{color:var(--c-move)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:15.5px}
+th,td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--surface2);font-size:14.5px;color:var(--muted);position:sticky;top:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.code{font-weight:700;color:var(--teal);white-space:nowrap}
+tr.grp td{background:var(--teal-soft);font-weight:700;color:var(--ink)}
+td.hl,th.hl{background:var(--amber-soft)}
+.full-tag{display:inline-block;font-size:12px;font-weight:700;background:var(--orange);color:#fff;border-radius:6px;padding:0 6px;margin-left:6px}
+.tbl-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 10px}
+.tbl-tools input{border:2px solid var(--line);border-radius:10px;padding:7px 12px;background:var(--surface2);min-width:220px;flex:1;max-width:360px}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-bottom:16px}
+.cat{text-align:left;border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 14px}
+.cat b{display:block;font-size:22px;font-weight:900;color:var(--c-play)}
+.cat span{font-size:14.5px;line-height:1.45;display:block}
+.cat[aria-pressed="true"]{border-color:var(--c-play);background:var(--surface2);box-shadow:inset 0 0 0 1px var(--c-play)}
+.mini-list{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+.mini-card{border:1.5px solid var(--line);background:var(--surface2);border-radius:10px;padding:5px 12px;font-size:15px}
+.mini-card:hover{border-color:var(--teal)}
+.note{font-size:14.5px;color:var(--muted);border-left:4px solid var(--amber);padding:4px 0 4px 12px;margin:12px 0}
+.sub-box{border:1px solid var(--line);border-left:6px solid var(--teal);background:var(--surface);border-radius:6px 12px 12px 6px;padding:12px 14px;margin-bottom:12px}
+.sub-box.dis{border-left-color:var(--c-play)}
+.sub-box.smart{border-left-color:var(--c-move)}
+.sub-box.none{border-left-color:var(--line)}
+.sub-box h4{margin:0 0 6px;font-size:17px}
+.sub-box table{min-width:0;font-size:14.5px}
+.sub-box p{margin:4px 0}
+@media (max-width:760px){ .two{grid-template-columns:1fr} .nav{position:static} }
+
+@media (max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:20px}
+  .stairs{height:170px}
+}
+@media (max-width:560px){
+  body{font-size:16px}
+  .wrap{padding:0 14px}
+  header.hero{padding-top:52px}
+  .step{padding:8px 6px}
+  .step b{font-size:22px}
+  .step span{font-size:12px}
+  .f-label{min-width:100%;padding-top:0}
+  .dom{padding:4px 10px 4px 4px}
+  .dom .g{width:36px;height:36px;font-size:19px}
+  .d-head{flex-wrap:wrap}
+  .d-actions{margin-left:0;width:100%}
+  .blk{grid-template-columns:1fr;gap:4px}
+  .blk .k{justify-self:start;padding:2px 10px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  body{background:#fff;color:#000}
+  .wrap,.overlay,footer,.theme-btn,.d-actions,.tabs,.nav{display:none!important}
+  .drawer{position:static;transform:none;width:auto;display:block}
+  .d-body{overflow:visible}
+  .tpanel[hidden]{display:block!important}
+  .tpanel{break-inside:avoid;margin-bottom:12px}
+  .media{display:none!important}
+}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn" type="button">切換深淺色</button>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-grid">
+      <div>
+        <p class="brand">愛迪樂健康促進團隊</p>
+        <h1>長照輔具資料庫</h1>
+        <p class="lede">依照身體功能、GMFCS 行動分級，以及食、衣、住、行、樂的生活情境，找到對應的輔具，並查看每一種類的操作方式、能幫什麼與注意事項。</p>
+      </div>
+      <div class="stairs-box">
+        <div class="stairs-head">
+          <h2>GMFCS 粗大動作分級</h2>
+          <button class="link-btn" id="gmToggle" type="button" aria-expanded="false">看分級說明</button>
+        </div>
+        <div class="stairs" id="stairs" role="group" aria-label="選擇 GMFCS 分級"></div>
+        <p class="stairs-note">台階越高，代表移動時需要的支持越多。再點一次可取消。</p>
+        <div class="gm-explain" id="gmExplain"></div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav" aria-label="主選單">
+    <div class="vtabs" role="tablist">
+      <button class="vtab" role="tab" type="button" data-v="db" aria-selected="true">輔具查詢</button>
+      <button class="vtab" role="tab" type="button" data-v="ltc" aria-selected="false">長照 3.0 補助</button>
+      <button class="vtab" role="tab" type="button" data-v="dis" aria-selected="false">身心障礙輔具</button>
+      <button class="vtab" role="tab" type="button" data-v="env" aria-selected="false">居家無障礙</button>
+      <button class="vtab" role="tab" type="button" data-v="cmp" aria-selected="false">兩制度比較</button>
+    </div>
+    <div class="ident"><span>身分別</span>
+      <div class="seg" id="identSeg" role="group" aria-label="身分別">
+        <button type="button" data-i="gen" aria-pressed="true">一般戶</button>
+        <button type="button" data-i="sub" aria-pressed="false" title="非列冊低收、中低收，但符合中低收入老人生活津貼（第二款）或身心障礙者生活補助資格">領津貼／身障生活補助</button>
+        <button type="button" data-i="mid" aria-pressed="false">中低收入戶</button>
+        <button type="button" data-i="low" aria-pressed="false">低收入戶</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="view" id="view-db">
+  <section class="filters" aria-label="篩選條件">
+    <div class="f-row">
+      <div class="f-label">生活情境</div>
+      <div class="domains" id="domains" role="group" aria-label="生活情境"></div>
+    </div>
+    <div class="f-row">
+      <div class="f-label">身體功能</div>
+      <div class="chips" id="funcs" role="group" aria-label="身體功能（可複選）"></div>
+    </div>
+    <div class="f-row">
+      <div class="f-label">補助狀況</div>
+      <div class="chips" id="subs" role="group" aria-label="補助狀況"></div>
+    </div>
+    <div class="f-row">
+      <div class="f-label">關鍵字</div>
+      <div class="search">
+        <input id="q" type="search" placeholder="例如：拐杖、洗澡、吞嚥、偏癱、移位" aria-label="搜尋輔具">
+        <button class="toggle" id="favOnly" type="button" aria-pressed="false">★ 只看收藏</button>
+        <button class="clear" id="clearAll" type="button">清除全部條件</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="status">
+    <p id="count"></p>
+    <span class="active" id="activeTxt"></span>
+  </div>
+  <main class="grid" id="grid" aria-live="polite"></main>
+  </div>
+  <div class="view" id="view-ltc" hidden></div>
+  <div class="view" id="view-dis" hidden></div>
+  <div class="view" id="view-env" hidden></div>
+  <div class="view" id="view-cmp" hidden></div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>使用提醒：GMFCS 原為腦性麻痺兒童與青少年的粗大動作功能分級，本資料庫借用其五級概念作為「行動能力」的參考；長者、中風或其他障礙者請以實際功能評估為準。</p>
+    <p>輔具選用、尺寸與擺位調整，建議由職能治療師、物理治療師或輔具評估人員評估後再購買或租借。部分品項可申請長照或身障輔具補助，可洽各縣市輔具資源中心或長照管理中心。</p>
+    <p>圖片與影片連結會開啟 Google 與 YouTube 的搜尋結果，內容來自第三方，觀看時請留意資訊來源。</p>
+    <p>補助資料整理自：身心障礙者輔具費用補助辦法及附表基準表（111 年 10 月 20 日修正，112 年 1 月 1 日施行，242 項）、身障輔具現制與長照輔具新制對照表、長期照顧服務申請及給付辦法附表二、四、四之一、五（114 年 6 月 19 日修正，115 年 7 月 1 日施行）。整理日期 2026 年 10 月，金額與資格以主管機關最新公告及各縣市核定為準。</p>
+    <p class="sign">設計者｜愛迪樂 鍾孟修 職能治療師</p>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" aria-hidden="true">
+  <div class="d-head" id="dHead"></div>
+  <div class="d-body" id="dBody"></div>
+</aside>
+
+<script>
+const DOM = {
+  "食":{w:"飲食",c:"var(--c-food)"},
+  "衣":{w:"穿著",c:"var(--c-cloth)"},
+  "住":{w:"居家・如廁・沐浴",c:"var(--c-home)"},
+  "行":{w:"行動・轉移",c:"var(--c-move)"},
+  "樂":{w:"休閒・溝通",c:"var(--c-play)"}
+};
+const F = {
+  walk:"步行困難", bal:"平衡不佳／易跌倒", hemi:"單側偏癱", hand:"手部抓握差", arm:"上肢無力",
+  rom:"關節活動受限", trans:"轉位困難", bed:"臥床／坐姿控制差", swal:"吞嚥困難",
+  cog:"認知障礙／失智", vis:"視覺障礙", hear:"聽覺／溝通障礙", cg:"照顧者負荷高"
+};
+const G = [
+  {s:"可獨立行走", d:"室內外都能獨立行走、上下樓梯，但速度、平衡與協調等進階動作有限制。"},
+  {s:"行走有限制", d:"可以行走，但長距離、不平路面、斜坡或人多的地方受限，上下樓梯需要扶手；長距離可能需要手持輔具或輪椅。"},
+  {s:"需手持輔具行走", d:"室內需靠拐杖、助行器等手持行動輔具行走；戶外或長距離多使用輪椅。"},
+  {s:"自主移動受限", d:"多數情境需要他人推輪椅或使用電動行動輔具；坐姿可能需要支撐，轉位需要協助。"},
+  {s:"完全依賴他人", d:"頭部、軀幹控制與姿勢維持嚴重受限，所有移動都需要他人以輪椅或照顧協助完成。"}
+];
+const ROMAN = ["I","II","III","IV","V"];
+
+const DB = [
+{id:"d01",n:"加粗握柄餐具",d:["食"],f:["hand","rom","hemi"],g:[1,2,3,4],k:"加粗握柄 餐具 輔具",
+s:"把握柄加粗、加長或改變角度，讓握力不足、手指變形的人也能自己吃飯。",
+t:[["加粗握柄湯匙／叉子","以整個手掌握住握柄，手腕保持在中間位置，舀起食物後彎曲手肘送到口中。","握柄直徑變大，手指不需完全握緊就能穩定，減少掉落與手部疼痛。","握柄粗細依手掌大小選擇，太粗反而握不住；泡棉套要定期更換，避免藏汙。"],
+["可彎折角度湯匙","依手腕或前臂的限制，把湯匙頸部彎到合適角度（左右手方向不同），試舀幾次再固定。","手腕、前臂旋轉受限時，不必扭轉手就能讓湯匙平放入口。","反覆彎折會造成金屬疲勞，角度調好後盡量不要再改；使用前確認沒有裂痕。"],
+["萬用套（C 型夾持套）","把套子套在手掌上，餐具插入掌側插槽，靠套子固定，不需要用手握。","適合幾乎無法抓握的人，例如手指無力、高位頸髓損傷或嚴重關節炎。","魔鬼氈不要綁太緊以免影響循環；取下後檢查皮膚有無壓紅。"]]},
+
+{id:"d02",n:"防滑餐盤與護緣碗",d:["食"],f:["hemi","hand","cog"],g:[1,2,3,4],k:"防滑碗 護緣盤 輔具",
+s:"讓碗盤不滑動、食物不會被推出去，單手也能把飯菜舀乾淨。",
+t:[["防滑墊","鋪在餐桌上再放碗盤，使用前先把桌面擦乾。","單手進食時，另一手不必扶碗。","沾到油或水會失去止滑力，餐後清洗晾乾。"],
+["斜底碗／內緣碗","湯匙沿著碗內較高的一側推，食物會被內緣擋住，集中到湯匙上。","減少用另一隻手推菜或扶碗，提高自己吃完一餐的比例。","確認碗底吸盤或止滑底有吸住；熱湯不要裝太滿。"],
+["餐盤擋板（護緣環）","扣在一般餐盤邊緣，把菜往擋板方向推。","可以沿用家裡原本的餐具，外出攜帶也方便。","扣環要扣牢；高溫洗碗機可能讓塑膠變形。"]]},
+
+{id:"d03",n:"輔助筷",d:["食"],f:["hand","hemi"],g:[1,2,3],k:"輔助筷 彈簧筷 長輩",
+s:"兩根筷子頂端相連並附回彈，張開靠彈力、只需要捏合，適合手指靈巧度下降或需要換手使用的人。",
+t:[["夾子型（鑷子式）輔助筷","像拿夾子一樣，以拇指與食指、中指捏合，放鬆後會自動張開。","不需要控制兩根筷子分開的精細動作，中風後改用非慣用手也比較好上手。","彈力太強會讓手很快疲勞，選擇可調彈力的款式；夾圓滑食物時放慢速度。"],
+["指環型學習筷","手指分別套入指環，依指環位置握持，練習正確夾法。","保留使用筷子的習慣與尊嚴，也可以當作手部精細動作練習。","指環尺寸要合手，太緊會壓迫手指；手指變形明顯者改用夾子型。"]]},
+
+{id:"d04",n:"特殊水杯",d:["食"],f:["swal","hand","rom"],g:[1,2,3,4,5],k:"缺口杯 吞嚥 輔具",
+s:"透過杯子的形狀與流量控制，減少喝水時仰頭與嗆咳，也讓手不穩的人拿得住。",
+t:[["缺口杯（鼻缺杯）","缺口朝向鼻子那一側，喝水時不必把頭往後仰，保持下巴微收。","下巴微收的姿勢比較能保護呼吸道，照顧者也方便從旁觀察流量。","吞嚥困難者的液體濃稠度，應依語言治療師或醫療團隊建議；杯子不能取代吞嚥評估。"],
+["雙耳杯／加蓋杯","雙手握住兩側把手，杯蓋扣緊後從飲用孔小口喝。","手抖、握力差時比較穩，不容易打翻。","吸嘴設計的杯蓋要留意流速，常嗆咳者先經評估；矽膠墊圈要定期拆洗。"],
+["單向閥吸管／定量杯","單向閥吸管讓液體停留在吸管內不回流；定量杯每次只送出固定的量。","吸力不足者不必每口重新吸；定量杯避免一次喝太多而嗆到。","是否適用需由專業人員評估；單向閥要拆開清洗，避免孳生細菌。"]]},
+
+{id:"d05",n:"輪椅餐桌板與跨床桌",d:["食","樂"],f:["bed","arm"],g:[3,4,5],k:"輪椅餐桌板 跨床桌",
+s:"提供高度合適的穩定桌面，讓坐輪椅或在床上的人能撐著手肘吃飯、閱讀、做活動。",
+t:[["輪椅餐桌板","從前方沿扶手滑入固定，調整到手肘可以平放的位置。","上肢有支撐點，進食、寫字、手部活動更穩，也能協助軀幹前傾時的支撐。","不可當成約束使用；保留本人能自己移開的方式，並定期檢查有無壓迫腹部。"],
+["跨床桌（升降床邊桌）","底座推入床下，桌面跨在床上，以旋鈕調整高度。","臥床者半坐臥時也能自己用餐、閱讀。","不可撐著桌面起身，輪子要鎖定；桌面高度以手肘能放上去為宜。"]]},
+
+{id:"d06",n:"動態臂托（上肢支撐）",d:["食","樂"],f:["arm"],g:[3,4,5],k:"mobile arm support 進食 輔具",
+s:"用支點托住前臂的重量，讓肩膀與手肘力量不足的人，仍能把手送到嘴邊。",
+t:[["機械式臂托","固定在輪椅或桌面，前臂放入托槽，利用小幅度的肩部動作讓手臂沿軌道移動。","適合肌肉萎縮、高位脊髓損傷或嚴重肌無力的人，恢復自己進食與按按鍵。","需要專業人員安裝與調整平衡，調整不當會增加肩頸代償；建議經輔具評估。"],
+["彈簧／動力輔助臂","以彈簧或馬達抵銷手臂重量，使用者只需輕微出力。","可延伸到刷牙、操作平板等日常活動。","價格與設定門檻較高，先試用再決定；肩關節半脫位者要特別注意擺位。"]]},
+
+{id:"d07",n:"單手料理與開瓶輔具",d:["食"],f:["hemi","hand"],g:[1,2,3],k:"單手 切菜板 開瓶器 輔具",
+s:"把需要雙手合作的備餐動作，改成用固定裝置代替另一隻手。",
+t:[["單手切菜板","食材插在板上的固定釘，或推到邊角擋條，用健側手拿刀切。","偏癱者也能參與備餐，維持在家中的角色。","固定釘尖銳，收納時套上保護蓋；板底止滑吸盤要吸穩。"],
+["防滑開瓶器","墊在瓶蓋上增加摩擦力，或使用固定在櫥櫃下的 V 型開瓶器，轉動瓶身就能打開。","握力不足或關節炎時，減少手指扭轉造成的疼痛。","開熱飲或碳酸飲料要慢，避免噴濺燙傷。"],
+["固定式削皮器","削皮器固定在桌面，手拿食材往刀片推。","不需要一手拿食材、一手拿刀。","刀片朝外、手指遠離刀片；認知退化者需在旁陪同。"]]},
+
+{id:"d08",n:"穿襪輔助器",d:["衣"],f:["rom","walk","bal"],g:[1,2,3],k:"穿襪器 輔具 使用",
+s:"不必彎腰碰到腳尖就能穿上襪子，適合髖膝術後或彎腰困難的人。",
+t:[["軟式穿襪器","把襪子撐套在塑膠片上，放下拉繩讓穿襪器落到腳前，腳伸入後雙手拉繩往上拉。","髖關節置換術後需避免過度彎曲時特別實用。","坐在有椅背的穩固椅子上操作；過緊的彈性襪不適合，容易拉不上。"],
+["硬式穿襪器（彈性襪用）","把彈性襪反套在金屬或硬塑膠框上，腳伸入後握住把手往上推。","讓需要穿壓力襪的人可以自己完成。","框架較大，操作時注意平衡；購買前確認適用的彈性襪壓力等級。"]]},
+
+{id:"d09",n:"長柄鞋拔與免綁鞋帶",d:["衣"],f:["rom","hemi","hand"],g:[1,2,3],k:"長柄鞋拔 彈性鞋帶",
+s:"減少彎腰與綁鞋帶這類大動作與精細動作，讓出門穿鞋更快也更安全。",
+t:[["長柄鞋拔","坐著把鞋拔放進鞋跟後方，腳跟沿著鞋拔滑入。","不必彎腰，也不會踩扁鞋跟。","坐著使用最安全；不可當作拐杖支撐身體。"],
+["彈性鞋帶／免綁鞋帶","換上彈性鞋帶後調整一次鬆緊，之後直接套穿。","單手或手指不靈活也能穿運動鞋，保有鞋子的包覆性。","鞋子仍要包覆腳跟、鞋底止滑；不建議為了好穿改穿拖鞋外出。"],
+["魔鬼氈或拉鍊式鞋","拉開魔鬼氈或側邊拉鍊，腳放入後貼合。","腳部水腫或穿足踝矯具時開口大，穿脫容易。","魔鬼氈要定期清除毛絮，維持黏性。"]]},
+
+{id:"d10",n:"穿衣棒與長柄取物夾",d:["衣","住"],f:["rom","bal","walk"],g:[1,2,3,4],k:"穿衣棒 長柄取物夾",
+s:"延長手的長度，用來勾衣服、拉褲子、撿地上的東西，減少彎腰與跌倒。",
+t:[["穿衣棒","一端的勾子勾住衣領或褲頭，協助把衣褲推過肩膀或拉到腳邊；另一端可以推掉襪子。","肩膀活動受限或彎腰困難的人可以自己穿脫。","勾子不要勾到皮膚；先熟練操作再實際使用。"],
+["長柄取物夾","按壓把手讓夾口閉合，夾取地面或高處的輕物。","減少彎腰、踮腳造成的跌倒風險。","只適合輕的物品；重物或易碎物請他人協助。"]]},
+
+{id:"d11",n:"扣鈕器與拉鍊輔助",d:["衣"],f:["hand","hemi"],g:[1,2,3],k:"扣鈕器 輔具 使用",
+s:"解決手指精細度不足時最難的扣子與拉鍊。",
+t:[["扣鈕器","鐵圈從扣眼穿過，套住鈕扣後往回拉，鈕扣就會穿過扣眼。","單手也能扣襯衫，保有穿著的選擇。","小鈕扣與緊扣眼比較難，先從大鈕扣練習；可選加粗握柄款。"],
+["拉鍊拉環","在拉鍊頭加掛一個大環或繩圈，用手指勾住拉動。","不必捏住細小的拉鍊頭。","外套拉鍊對齊仍需要另一手，偏癱者可改選套頭或前開魔鬼氈衣物。"]]},
+
+{id:"d12",n:"易穿脫衣物",d:["衣"],f:["hemi","rom","bed","cg"],g:[1,2,3,4,5],k:"易穿脫衣服 長輩 照顧服",
+s:"從衣服本身的設計下手，讓本人或照顧者換衣服更省力。",
+t:[["前開式／寬袖上衣","偏癱者先穿患側袖、再穿健側；脫的時候先脫健側、再脫患側。","減少手臂上舉與扭轉，符合偏癱穿衣原則。","選有彈性、不易皺的布料；袖口不宜過緊。"],
+["磁吸扣或魔鬼氈衣物","前襟對齊後自動吸合或貼合。","手指不靈活的人不必扣鈕扣。","裝有心律調節器者，先確認產品說明中磁扣的安全距離。"],
+["側開式褲子／背後開口照顧服","臥床者側翻時打開側邊拉鍊或扣子，不必抬腿就能換褲子。","臥床者換衣省力，減少關節拉扯。","尊重本人的感受與隱私，不以衣服設計代替約束。"]]},
+
+{id:"d13",n:"髖部保護褲",d:["衣"],f:["bal"],g:[1,2,3],k:"髖部保護器 防跌",
+s:"在大腿外側骨頭突起的位置加上護墊，跌倒時分散撞擊力，降低髖部受傷的嚴重度。",
+t:[["硬殼式護髖","穿上專用內褲，把硬殼護片放在兩側大腿外側骨突處。","分散衝擊的效果較明顯。","效果取決於每天都有穿；確認位置正確、不壓迫皮膚。"],
+["軟墊式護髖","直接穿上內含泡棉護墊的褲子。","舒適，比較願意長時間穿。","依洗滌說明清洗，避免泡棉變形；護髖不能取代肌力平衡訓練與環境改善。"]]},
+
+{id:"d14",n:"扶手",d:["住"],f:["bal","walk","hemi","trans"],g:[1,2,3,4],k:"浴室扶手 安裝 L型",
+s:"居家最基本也最有效的防跌設施，在站起、轉身、跨步時提供穩定的抓握點。",
+t:[["L 型扶手","垂直段協助從坐到站，水平段協助坐下與穩定，常裝在馬桶側牆。","一支扶手同時支撐起身與坐下兩個動作。","必須鎖在實牆或加強底板上，吸盤式扶手不能承重；高度依身高與健側手位置評估。"],
+["一字型扶手","裝在浴缸邊、走道、玄關，水平或斜向使用。","走道與上下台階時提供連續支撐。","粗細以能完整握住為佳，表面止滑；兩端收頭，避免勾到衣服。"],
+["可掀式（上掀）扶手","馬桶旁沒有牆時使用，不用時往上掀起，讓輪椅可以靠近轉位。","兼顧扶持與輪椅側向轉位的空間。","放下後確認卡榫鎖定；承重能力比固定式低。"]]},
+
+{id:"d15",n:"馬桶增高器與扶手架",d:["住"],f:["walk","rom","trans"],g:[1,2,3,4],k:"馬桶增高器 扶手架",
+s:"提高坐面高度並增加扶持，讓從馬桶起身不再吃力。",
+t:[["馬桶增高墊","放在馬桶座上，依型號卡緊或鎖固。","髖膝術後或下肢無力者坐下、站起的角度變小，比較省力。","一定要確認卡緊不滑動；太高會讓腳踩不到地，反而不穩。"],
+["附扶手增高器／馬桶扶手架","扶手架圍在馬桶兩側，雙手撐扶手站起。","牆面無法安裝扶手時的替代方案。","確認腳架平穩著地、兩側高度一致；體重較重者選承重較高的款式。"]]},
+
+{id:"d16",n:"便盆椅",d:["住"],f:["trans","walk","bed","bal","cg"],g:[2,3,4,5],k:"便盆椅 種類",
+s:"放在床邊當夜間廁所，或推進浴室兼作洗澡椅，減少走去廁所途中跌倒。",
+t:[["固定式／可收折便盆椅","放在床邊健側，扶著扶手轉位坐下，使用後清理便桶。","夜間不必走到廁所，降低跌倒風險。","椅腳要平穩、可靠牆放置；使用後立即清理，旁邊可加屏風維護尊嚴。"],
+["附輪便盆洗澡兩用椅","鎖定煞車後轉位坐上，推到馬桶上方或淋浴區使用。","一次完成如廁與洗澡，減少轉位次數。","移動與轉位時都要鎖輪；先確認浴室門檻與坡度推得進去。"],
+["可拆扶手便盆椅","拆下一側扶手，與床或輪椅並排，橫向移過去。","適合無法站立、需要用移位滑板橫移的人。","拆下扶手後側邊沒有保護，轉位完成立刻裝回。"]]},
+
+{id:"d17",n:"洗澡椅與浴缸轉位椅",d:["住"],f:["bal","walk","trans","bed","cg"],g:[1,2,3,4,5],k:"洗澡椅 浴缸轉位椅",
+s:"坐著洗澡，降低在浴室站立時滑倒的風險。",
+t:[["洗澡椅（有／無靠背扶手）","放在淋浴區，坐穩後再開水，用蓮蓬頭沖洗。","站立耐力不足、平衡差的人能安全、較從容地洗澡。","選有止滑腳套、可調高度的款式；坐姿控制差者選有靠背與扶手。"],
+["浴缸轉位椅（橫跨浴缸）","椅子一半在缸外、一半在缸內，先坐在缸外側，再把腿抬過缸緣、臀部橫移進去。","不必跨越浴缸，家中保留浴缸者適用。","四隻腳都要穩固接觸地面與缸底；建議同時安裝扶手。"],
+["洗澡床／沐浴床","讓使用者平躺在防水床面上，在床上沖洗。","適合無法維持坐姿、需要全身協助的人。","需要較大的浴室空間與排水；注意保暖與隱私，兩人操作較安全。"]]},
+
+{id:"d18",n:"長柄沐浴刷與洗頭槽",d:["住"],f:["rom","bed","hemi","cg"],g:[1,2,3,4,5],k:"長柄沐浴刷 床上洗頭槽",
+s:"肩膀抬不高的人能自己洗背洗腳，臥床者也能在床上洗頭。",
+t:[["長柄沐浴刷／海綿","握住長柄刷洗背部或腳底，可彎曲柄頭調整角度。","保留自己洗澡的能力與隱私。","刷頭定期更換、晾乾；皮膚脆弱者選軟毛刷。"],
+["充氣式／床上洗頭槽","把洗頭槽墊在頭下，排水管接到床邊水桶，邊沖水邊清洗。","臥床者不必移到浴室就能洗頭。","排水管出口要低於槽面；先用手腕測水溫，避免耳朵進水。"]]},
+
+{id:"d19",n:"防滑設施",d:["住"],f:["bal","vis","cog"],g:[1,2,3],k:"浴室防滑 止滑貼條",
+s:"從地面著手降低滑倒，浴室、廚房、樓梯最優先。",
+t:[["防滑墊","放在淋浴區與浴室門口，背面吸盤壓緊。","濕地面增加摩擦力。","定期掀起清洗避免發霉；邊緣翹起反而會絆倒人。"],
+["止滑貼條／止滑劑","清潔、乾燥地面後貼上或塗布；樓梯貼在每階踏面前緣。","屬於固定式改善，不會移位。","選擇與地面顏色對比明顯的貼條，同時提醒視力不佳者台階位置。"],
+["止滑室內鞋","在家穿著包覆型的止滑室內鞋。","比穿拖鞋或光腳更穩。","止滑襪在光滑磁磚上仍有風險，優先選包鞋式室內鞋。"]]},
+
+{id:"d20",n:"居家照顧床",d:["住"],f:["bed","trans","cg"],g:[3,4,5],k:"居家照顧床 電動 三馬達",
+s:"可調整床面高度與背部、腳部角度，方便起身、轉位與照顧，也減少照顧者彎腰受傷。",
+t:[["手動照顧床","以床尾搖桿調整背部與腳部角度。","價格較低，可改善進食、呼吸與起身時的姿勢。","搖桿用完要收回，避免撞傷；手動調整較費力。"],
+["電動照顧床（二／三馬達）","以手控器調整背板、腳板，三馬達可以升降整個床面。","轉位時把床調到與輪椅等高；照顧時調高床面保護照顧者的腰。","平時床面調到最低並鎖輪；抬高背部前先略抬腳部，可減少往下滑與皮膚剪力。"],
+["床欄","依需求升起單側或兩側，作為翻身與起身時的扶持。","提供翻身時的抓握點。","床欄與床墊間空隙過大有夾傷風險；躁動或失智者不宜把床欄當約束，需另外評估。"]]},
+
+{id:"d21",n:"減壓床墊與坐墊",d:["住","行"],f:["bed","cg"],g:[4,5],k:"氣墊床 減壓坐墊 壓瘡",
+s:"分散身體壓力，預防與照護壓力性損傷（壓瘡）。",
+t:[["交替式氣墊床","鋪在床墊上，接上主機依體重設定壓力，氣囊會輪流充氣、放氣。","長期臥床、翻身困難者的壓力分散。","仍需定時翻身；停電或漏氣時要能察覺，床單不要鋪太多層。"],
+["靜態減壓床墊（凝膠／記憶泡棉）","直接鋪在床面使用，不需電源。","安靜沒有馬達聲，適合壓瘡風險中等的人。","定期檢查是否「觸底」：手伸到身體下方摸得到底部，就代表支撐不足。"],
+["輪椅減壓坐墊","依前後方向放在輪椅座面，讓坐骨落在減壓區。","長時間坐輪椅者減少坐骨受壓。","氣囊式坐墊每天檢查充氣量；方向放反就失去效果。"]]},
+
+{id:"d22",n:"移位輔具",d:["住","行"],f:["trans","hemi","walk","cg"],g:[3,4,5],k:"移位滑板 移位腰帶 移位機",
+s:"讓床、輪椅、馬桶之間的轉位更安全，也保護照顧者的腰。",
+t:[["移位腰帶","繫在使用者腰部，照顧者抓住把手，配合口令一起站起、轉身。","比拉手臂或抱腋下安全，避免肩關節拉傷。","繫在腰部而不是胸部；使用者需要有部分下肢承重能力。"],
+["移位滑板","拆下輪椅扶手，滑板一端墊在臀下、一端架在目標座面，分段把臀部滑過去。","不能站立的人可以坐著橫向移動。","兩邊座面盡量等高並鎖輪；手指不要放在滑板與座面之間。"],
+["移位轉盤","雙腳站在轉盤上，扶住扶手或照顧者，由照顧者協助旋轉。","減少腳步調整，適合站得起來但跨步困難的人。","需能維持短暫站立；轉盤在光滑地面容易滑動。"],
+["移位機（吊帶式）","把吊帶鋪在使用者身下並掛上吊臂，以電動或油壓吊起移位。","完全無法承重的人也能安全轉位，減少照顧者受傷。","吊帶尺寸要合身；操作前檢查吊勾與電池，建議受過訓練再使用。"]]},
+
+{id:"d23",n:"起身輔具",d:["住"],f:["walk","trans","rom"],g:[1,2,3,4],k:"床邊起身扶手 起身椅",
+s:"協助從床上或椅子上起身，是維持自己下床、如廁的關鍵。",
+t:[["床邊起身扶手","夾在床墊下固定，側躺後抓住扶手坐起，再撐扶手站起。","不需要換照顧床也能有扶持點。","確認扶手與床之間的空隙不會夾住手腳或頭；固定帶要拉緊。"],
+["床尾拉繩梯","綁在床尾，雙手一節一節往上拉，讓上半身坐起。","腹部力量不足、但手臂有力的人可以自己坐起。","肩膀疼痛或中風患側肩膀不適合使用。"],
+["電動起身椅","按下按鈕讓椅面前傾抬高，協助從坐到站。","下肢無力者在客廳也能自己起身。","等椅面完全停止再站起；過度依賴會減少下肢使用，仍要搭配坐站練習。"]]},
+
+{id:"d24",n:"擺位輔具",d:["住"],f:["bed","hemi","cg"],g:[4,5],k:"擺位枕 翻身 楔形墊",
+s:"維持良好的躺姿與坐姿，預防關節攣縮與壓瘡，也讓臥床者躺得舒服。",
+t:[["擺位枕／長條枕","側躺時墊在背後、兩膝之間與上臂下方。","減少骨突處互相壓迫，維持關節位置。","枕套可拆洗；中風患側肩膀要有支撐，不要懸空下垂。"],
+["楔形墊（翻身墊）","翻身後斜墊在背部，讓身體維持約 30 度側躺。","30 度側躺可以避開髖部骨突直接受壓。","依壓瘡風險安排翻身時間，並觀察皮膚有無持續壓紅。"],
+["腳跟減壓墊／足托","墊在小腿下讓腳跟懸空，或用足托維持腳踝角度。","預防腳跟壓瘡與垂足。","不要只墊在膝蓋後方，避免膝關節長期彎曲。"]]},
+
+{id:"d25",n:"緊急呼叫與防走失裝置",d:["住","行"],f:["cog","bal","vis","cg"],g:[1,2,3,4,5],k:"緊急呼叫器 離床感應 防走失",
+s:"跌倒時能求救、離床或出門時能讓家人知道，兼顧安全與自主。",
+t:[["緊急呼叫鈴／隨身按鈕","按鈕放在床邊、浴室或配戴在身上，按下即通知家人或服務中心。","跌倒後能及早被發現，避免長時間倒在地上。","定期測試電池；放在跌倒後手也搆得到的位置，或直接配戴。"],
+["離床感應墊／感應器","放在床邊地板或床墊下，起身時發出提醒。","夜間起身容易跌倒或失智遊走者，家人能及時協助。","響聲可能嚇到本人，可改用只通知照顧者的無線接收器；誤報多時調整擺放位置。"],
+["防走失定位裝置","配戴有定位功能的手錶、鞋墊或掛件，家人用手機查看位置。","失智者外出走失時能較快找回。","需要充電，也需要本人願意配戴；可另申請防走失相關服務並告知鄰里。"]]},
+
+{id:"d26",n:"居家照明與感應夜燈",d:["住"],f:["vis","cog","bal"],g:[1,2,3],k:"感應夜燈 防跌 居家",
+s:"夜間跌倒常發生在起床上廁所的路上，照明是最容易做的改善。",
+t:[["感應式夜燈","沿著床邊到廁所的路線，插在插座或貼牆安裝，有人經過自動亮起。","不必摸黑找開關，減少夜間跌倒。","光線柔和不刺眼；亮燈時間要足夠走完整段路。"],
+["大面板開關／夜光開關","更換成大面板翹板開關或有夜光標示的開關。","手部不靈活或視力不佳的人也找得到、按得到。","開關高度與位置依輪椅使用者調整。"]]},
+
+{id:"d27",n:"分格藥盒與服藥提醒器",d:["住"],f:["cog","vis","hand"],g:[1,2,3,4,5],k:"分格藥盒 提醒 長輩",
+s:"協助按時、正確服藥，減少漏吃或重複吃。",
+t:[["一週分格藥盒","由家人或本人每週依藥單分裝早、中、晚各格。","一眼就看出這一餐吃過了沒。","分裝時要核對藥單；手部不靈活者選大格、好打開的款式。"],
+["電子提醒藥盒","設定時間後響鈴或亮燈，部分款式到時間才打開對應的藥格。","失智初期或獨居者減少漏吃、重複吃。","定期確認電池與時間設定；藥物有調整時立即更新。"]]},
+
+{id:"d28",n:"斜坡板",d:["住","行"],f:["walk","bed","cg"],g:[3,4,5],k:"輪椅斜坡板 門檻",
+s:"消除門檻與台階的高低差，讓輪椅與助行器可以進出。",
+t:[["門檻斜坡","放在室內門檻兩側，輪椅或助行器直接通過。","消除小高低差，減少絆倒與推輪椅的阻力。","要固定穩妥、表面止滑；邊緣顏色要明顯。"],
+["攜帶式／折疊斜坡板","展開後架在台階上，確認兩端穩定再推輪椅上下。","外出或家門口台階的臨時解決方式。","斜坡越長越緩越安全；下坡時照顧者站在下方，讓輪椅倒退下坡。"]]},
+
+{id:"d29",n:"手杖",d:["行"],f:["walk","bal","hemi"],g:[1,2,3],k:"四腳拐 手杖 使用方法",
+s:"最常見的步行輔具，增加一個支撐點，改善平衡並減輕患側負擔。",
+t:[["單點手杖","拿在健側手；手杖與患側腳一起往前，再跨出健側腳。高度約在手腕橫紋，握住時手肘微彎。","輕度平衡問題或單側下肢疼痛時減輕負重。","拿在患側手是常見錯誤；橡膠腳套磨平就要更換。"],
+["四腳拐（四點手杖）","同樣拿在健側手，四腳平放地面，底座較寬的一側朝外，以三點步態行走。","支撐面較大，偏癱者站立與步行較穩。","四腳都著地才能承重；在不平路面與樓梯較不穩，速度也較慢。"],
+["折疊式／帶椅手杖","折疊手杖展開後扣緊卡榫；帶椅手杖可展開成小凳暫坐。","外出攜帶方便，帶椅款排隊時可以休息。","帶椅手杖座面小，坐下前確認穩定；平衡差者不適合當主要步行輔具。"]]},
+
+{id:"d30",n:"腋下拐與前臂拐",d:["行"],f:["walk"],g:[1,2,3],k:"腋下拐 前臂拐 使用",
+s:"需要減少或避免單腳承重時使用，對上肢力量的要求較高。",
+t:[["腋下拐","頂端離腋下約兩、三指寬，靠手掌承重並把拐夾在胸側，不可把腋下壓在拐頂上。","骨折或術後短期不能承重時使用。","長期壓迫腋下可能傷到神經；平衡差的長者不一定適合，需先評估。"],
+["前臂拐（肘拐）","前臂套入臂環，握把承重，依指示使用兩點或四點步態。","長期使用者較靈活，上下樓梯也較方便。","需要足夠的上肢力量與握力；臂環不宜過緊。"]]},
+
+{id:"d31",n:"助行器",d:["行"],f:["walk","bal"],g:[2,3,4],k:"助行器 使用方法 長輩",
+s:"支撐面最大的步行輔具，在平衡差或下肢無力時提供穩定支撐。",
+t:[["固定式助行器","提起助行器往前放，四腳著地後，患側腳先跨入，健側腳再跟上。","穩定度最高，適合術後早期或平衡較差的人。","身體走進框內約一半，不要推太遠彎腰走；高度約在手腕橫紋。"],
+["前輪助行器（二輪）","前兩輪著地往前推，後腳的止滑套有煞車效果。","不必每步抬起，走路較連續，適合體力較差的人。","下坡或光滑地面要控制速度；步態容易往前衝的人（例如部分巴金森氏症患者）需先評估。"],
+["交替式助行器","左右框架可交替往前移，像走路一樣一側一側推。","適合手臂力量不足以把整個助行器抬起的人。","穩定度比固定式略低，需要先練習。"]]},
+
+{id:"d32",n:"助步車（帶輪助行車）",d:["行","樂"],f:["walk","bal"],g:[1,2,3],k:"四輪助步車 rollator 使用",
+s:"附座椅與手煞車的帶輪助行車，適合戶外較長距離步行與購物散步。",
+t:[["四輪附座助步車","雙手握把推行，身體保持在車架內；要坐下時先拉緊手煞車並鎖定，再轉身坐下。","走累可以隨時休息，籃子能放物品，提高外出意願。","坐著時不可讓別人推著走；下坡時用手煞車控制速度。"],
+["三輪助步車","推行方式與四輪相同，轉彎半徑較小。","室內窄小空間比較靈活。","側向穩定度較差，平衡不佳者不建議使用。"]]},
+
+{id:"d33",n:"足踝矯具（AFO）",d:["行"],f:["hemi","walk"],g:[1,2,3],k:"踝足矯具 AFO 中風",
+s:"改善垂足與腳踝不穩，讓走路時腳尖不拖地、腳踝不內翻。",
+t:[["塑膠固定式 AFO","穿上襪子後把矯具放進鞋中，腳跟貼緊後扣上魔鬼氈，再穿上鞋子。","中風垂足者步行時減少拖腳與絆倒。","鞋子要大半號或選開口大的款式；每天檢查皮膚，壓紅超過 30 分鐘不退要調整。"],
+["可動關節 AFO","穿戴方式相同，腳踝處有關節鉸鏈，允許部分活動。","上下坡與坐站轉換較自然。","需由專業人員評估與調整角度。"],
+["足下垂帶／動態踝足矯具","以彈性帶或輕量支架拉起腳背。","輕度垂足者較輕巧、易穿脫。","肌肉張力明顯偏高者支撐可能不足，需重新評估。"]]},
+
+{id:"d34",n:"手動輪椅",d:["行"],f:["walk","bed","cg"],g:[3,4,5],k:"輪椅 種類 選擇",
+s:"無法安全步行或需要長距離移動時的主要行動輔具，選擇時要考慮身形、坐姿與使用環境。",
+t:[["一般型／輕量型輪椅","鎖定煞車後轉位坐上，腳放上腳踏板；自己推時雙手由後往前推手輪圈。","可自推或由照顧者推行，輕量款方便收折上車。","座寬約臀寬加兩指，座深在膝窩前留兩、三指；不使用時一定要鎖煞車。"],
+["高背躺式輪椅","由照顧者以後方把手調整椅背的傾斜角度。","軀幹控制差、需要休息躺的人可以減少疲勞。","單純往後躺會讓臀部往前滑，需搭配防滑與擺位；頭頸要有支撐。"],
+["空中傾倒式輪椅","整個座椅連同椅背一起往後傾，髖、膝角度維持不變。","可以定時改變受壓點、減少滑坐，適合坐姿控制很差的人。","價格與重量較高，需經專業評估與試坐。"],
+["外出照顧型輪椅（小後輪）","由照顧者推行，後輪較小，不適合自己推。","輕巧、收折後體積小，適合外出就醫。","不適合長時間乘坐；下台階時以後輪先下。"]]},
+
+{id:"d35",n:"電動輪椅與電動代步車",d:["行","樂"],f:["walk","arm","bed"],g:[3,4,5],k:"電動輪椅 電動代步車 差別",
+s:"讓上肢力量不足或體力差的人能自主移動，擴大生活範圍。",
+t:[["電動輪椅","以搖桿控制方向與速度，可依需求改為下巴控制、頭控等替代方式。","GMFCS IV 等級的人仍能自主移動、參與社區活動。","需評估認知、視力與操作能力；室內門寬與迴轉空間要足夠。"],
+["電動代步車（四輪／三輪）","坐上後以把手與加速桿操作，適合戶外使用。","能短距離步行、但耐力不足的人的戶外代步工具。","需要良好的坐姿與上肢能力；在人行道上放慢速度，夜間加裝反光。"]]},
+
+{id:"d36",n:"輪椅坐姿擺位配件",d:["行"],f:["bed","hemi"],g:[3,4,5],k:"輪椅擺位 坐姿 配件",
+s:"輪椅坐得正、坐得久，是預防壓瘡、攣縮與疼痛的關鍵。",
+t:[["輪椅背靠與側支撐","安裝在椅背兩側，貼近胸廓側面。","減少身體歪斜，讓上肢更好使用、呼吸更順。","側支撐不可壓到腋下；依身形調整高度。"],
+["骨盆帶（座位帶）","以約 45 度角固定在骨盆前方，而不是綁在腰部。","維持骨盆位置，減少往前滑坐。","目的是擺位，最好讓本人可以自己解開；本人無法解開時，需依約束相關規範評估。"],
+["偏癱上肢托板","安裝在輪椅扶手上，讓患側手臂平放。","支撐患側肩膀，減少肩痛與半脫位。","定期檢查手部有無水腫，可讓手部略微抬高。"]]},
+
+{id:"d37",n:"爬梯機與樓梯升降椅",d:["行"],f:["walk","cg","bed"],g:[3,4,5],k:"爬梯機 樓梯升降椅",
+s:"解決沒有電梯的住家上下樓問題，讓長輩不被困在家中。",
+t:[["爬梯機（履帶式／步行式）","把輪椅固定在爬梯機上，或讓使用者坐在專用座椅，由照顧者逐階操作上下。","不需改建樓梯就能外出。","操作者必須受過訓練；先評估樓梯轉角寬度與階高。"],
+["樓梯升降椅","沿樓梯牆面安裝軌道，坐上座椅繫好安全帶，按鈕上下。","本人可以獨立使用，適合能轉位坐下、但爬樓梯困難的人。","需要施工安裝，公寓公共樓梯可能需要其他住戶同意。"]]},
+
+{id:"d38",n:"站立架",d:["行"],f:["bed","walk"],g:[4,5],k:"站立架 站立訓練",
+s:"協助無法自己站立的人每天有一段站立的時間。",
+t:[["前傾式／直立式站立架","轉位後以膝托、臀帶固定，慢慢升起到站立。","增加下肢承重，有助於循環、腸胃與心情，也能在站姿下進行活動。","第一次使用注意姿勢性低血壓，從小角度、短時間開始；有骨折風險或嚴重攣縮者先經醫療評估。"],
+["起立床（傾斜床）","平躺固定後，逐步調整傾斜角度。","長期臥床者逐步適應直立。","監測血壓、頭暈與臉色；多在專業單位使用。"]]},
+
+{id:"d39",n:"簡易手機與大按鍵遙控器",d:["樂"],f:["vis","hand","cog"],g:[1,2,3,4],k:"長輩手機 大按鍵遙控器",
+s:"簡化按鍵與畫面，讓長輩自己打電話、看電視，維持與家人的聯繫。",
+t:[["大按鍵／一鍵撥號手機","預先設定附家人照片的按鍵，按下即撥號。","認知或視力下降時，仍能主動聯絡家人。","由家人定期確認聯絡人設定與充電狀況。"],
+["大按鍵遙控器","只保留開關、選台、音量等常用按鍵。","減少按錯與挫折感。","先設定好常看的頻道；可在按鍵貼上顏色標籤。"]]},
+
+{id:"d40",n:"閱讀與視覺輔具",d:["樂"],f:["vis","arm"],g:[1,2,3,4,5],k:"擴視機 放大鏡 閱讀架",
+s:"放大文字、改善閱讀姿勢，讓看報、讀書、做手工可以持續下去。",
+t:[["手持／立式放大鏡","立式放大鏡平放在書面上移動；附燈款先開燈再閱讀。","輕中度視力下降者閱讀藥袋、報紙。","倍數不是越高越好，倍數越高看到的範圍越小；最好經眼科或視光專業評估。"],
+["擴視機（桌上型／攜帶型）","把文件放在鏡頭下，在螢幕上調整倍率、對比，或改成黑底白字。","低視能者可以閱讀、寫字。","需要練習移動文件；價格較高，可先洽輔具資源中心試用。"],
+["閱讀架／書架","把書或平板夾在可調角度的架子上。","手部無力或臥床者不必手持也能閱讀。","調整角度與距離，避免長時間低頭。"]]},
+
+{id:"d41",n:"持牌器與改良桌遊",d:["樂"],f:["hand","hemi","vis","cog"],g:[1,2,3,4],k:"持牌器 撲克牌架 長輩",
+s:"讓手部不便的人也能參與牌類與桌遊，維持社交樂趣。",
+t:[["持牌器／牌架","把牌插在底座溝槽，或夾在圓盤夾中，放在桌上看牌。","單手或握力差的人不必整手握牌。","選有止滑底座的款式；牌多時可用兩個。"],
+["大字撲克牌與大型棋子","直接替換一般撲克牌與棋子。","視力下降者容易辨識，手部不靈活者好拿取。","依認知程度簡化規則，先讓長輩成功，再慢慢加難。"]]},
+
+{id:"d42",n:"改良園藝工具",d:["樂"],f:["hand","rom","bed"],g:[1,2,3,4],k:"高架花台 輪椅園藝 加粗握柄園藝",
+s:"讓坐輪椅或關節不適的長輩也能繼續種花種菜。",
+t:[["加粗握柄／長柄園藝工具","以整個手掌握持鏟子、耙子；長柄款坐著就能碰到地面盆栽。","減少手腕與手指受力。","戴手套避免刮傷；工具用完收好，避免絆倒。"],
+["高架植栽箱","植栽箱下方留空讓輪椅靠近，高度約在手肘附近。","輪椅使用者與彎腰困難者可以在桌面高度工作。","箱體要穩固不會傾倒；澆水後保持地面乾燥。"]]},
+
+{id:"d43",n:"溝通輔具",d:["樂"],f:["hear","cog","arm"],g:[1,2,3,4,5],k:"溝通板 AAC 溝通輔具",
+s:"失語、構音障礙或無法說話時，用圖卡、文字或語音裝置表達需求與想法。",
+t:[["溝通圖卡／溝通板","依常用需求製作圖卡（喝水、上廁所、痛、想見家人），本人以手指、眼神或點頭選擇。","成本低、立即可用，減少因無法表達而產生的焦慮與情緒反應。","圖卡內容依個人生活調整；照顧者要耐心等待回應。"],
+["語音溝通器（AAC）","按下按鍵或平板上的圖示即播放語音，可搭配開關或眼控操作。","能主動開啟話題、參與團體活動。","需由語言治療師評估與設定詞彙；隨使用情境更新內容。"]]},
+
+{id:"d44",n:"聲音擴大與聽覺輔具",d:["樂"],f:["hear","cog"],g:[1,2,3,4,5],k:"聲音擴大器 長輩 聽力",
+s:"聽得清楚才能參與對話與活動，聽力也與認知健康息息相關。",
+t:[["個人聲音擴大器","說話的人對著麥克風說話，使用者戴耳機聆聽並調整音量。","臨時交談、看診或團體活動時聽得比較清楚。","不能取代經聽力檢查後選配的助聽器；音量不要開太大。"],
+["助聽器","經聽力師調整後配戴，練習在不同環境切換模式。","長期改善溝通與社會參與。","需要聽力檢查與驗配，初期有適應期；注意保養與電池。"],
+["閃光門鈴／震動鬧鐘","門鈴或鬧鐘以閃光、震動提醒。","重度聽損者也能察覺訪客與時間。","放在明顯位置；震動墊可放在枕頭下。"]]},
+
+{id:"d45",n:"書寫與繪畫輔具",d:["樂"],f:["hand","hemi","rom"],g:[1,2,3,4],k:"握筆器 加粗筆 長輩 書寫",
+s:"繼續寫字、簽名、畫畫，保有表達與創作的樂趣。",
+t:[["握筆器／加粗筆套","把筆套入握筆器或泡棉套，用較放鬆的方式握持。","手指無力、關節炎或手抖時較穩定。","粗細依手型選擇；不要握太緊，以免疲勞。"],
+["斜面寫字板","放在桌上，紙張夾在約 20 度的斜面上書寫。","減少低頭彎腰，手腕位置較穩。","紙張要固定；偏癱者可以用止滑墊或紙鎮壓住紙張。"],
+["萬用套持筆","以 C 型萬用套把筆固定在手掌上。","幾乎無法抓握的人仍能寫字或畫畫。","注意皮膚有無壓迫。"]]},
+
+{id:"d46",n:"開關與改裝玩具",d:["樂"],f:["arm","bed","cog"],g:[4,5],k:"大按鍵開關 switch 改裝玩具",
+s:"用大型按鍵開關控制玩具、音樂與電器，讓重度肢體障礙者也能主動參與。",
+t:[["大型按鍵開關","放在身體能動的部位附近（手、頭側、膝蓋），輕碰即觸發。","建立「我做了，就有反應」的因果經驗，提高主動參與。","開關位置需要反覆調整；避免需要長時間持續出力。"],
+["改裝玩具與電器控制器","透過電池轉接器或控制盒連接開關，按下即啟動音樂、風扇、泡泡機等。","GMFCS V 等級的人也能參與娛樂與團體活動。","改裝要注意用電安全，選用合格產品。"]]},
+
+{id:"d47",n:"坐姿運動與訓練輔具",d:["樂","行"],f:["walk","arm","bed"],g:[2,3,4,5],k:"手腳訓練器 坐姿踩腳踏車 長輩",
+s:"坐著也能活動手腳，把運動帶進日常與休閒。",
+t:[["坐姿腳踏器（迷你踏步機）","放在穩固椅子前面，坐著踩踏，可以調整阻力。","下肢無力者在家也能做耐力與肌力活動。","椅子要靠牆或有止滑；從低阻力、短時間開始。"],
+["電動手腳訓練器","手或腳固定在踏板上，可選被動、助力或主動模式。","重度無力者也能活動關節、促進循環。","肌肉張力高時降低速度；關節出現急性疼痛時暫停。"]]}
+];
+
+/* ---------- 補助資料 ---------- */
+/* 長照部分負擔依身分別分三類（長期照顧服務申請及給付辦法第 14 條、附表五）；身障依低收／中低收／一般戶 */
+const RATE = {
+  ltc:{gen:.7, sub:.9, mid:1, low:1},
+  dis:{gen:.5, sub:.5, mid:.75, low:1}
+};
+const IDN = {gen:"一般戶", sub:"領津貼或身障生活補助者", mid:"中低收入戶", low:"低收入戶"};
+const LTCCLS = {gen:"第三類", sub:"第二類", mid:"第一類", low:"第一類"};
+let ident = "gen";
+try{ ident = localStorage.getItem("atdb-ident") || "gen"; }catch(e){}
+if(!IDN[ident]) ident = "gen";
+const fmt = n => n.toLocaleString("zh-TW");
+const CNUM = "一二三四五六七八";
+
+/* 長照第一組：[碼, 名稱, 購置給付上限, 租賃每月上限(0=不可租), 全額註記, 分組, 對應身障項次] */
+const LTC = [
+ ["EA01","馬桶增高器、便盆椅或沐浴椅",1200,0,0,"個人照顧","166、167、168"],
+ ["EB01","單支枴杖－不鏽鋼製（雙側可加倍）",1000,0,0,"步行","42、43（可同時申請）"],
+ ["EB02","單支枴杖－鋁製（雙側可加倍）",500,0,0,"步行","42、43（可同時申請）"],
+ ["EB03","助行器",800,0,0,"步行","44、45"],
+ ["EB04","帶輪型助步車（助行椅）",3000,300,0,"步行","46"],
+ ["EC01","輪椅－A 款（非輕量化量產型）",3500,0,0,"輪椅","4"],
+ ["EC02","輪椅－B 款（輕量化量產型）",4000,450,0,"輪椅","5"],
+ ["EC03","輪椅－C 款（量身訂製型）",9000,0,1,"輪椅","6"],
+ ["EC04","輪椅附加功能－A 款（具利於移位功能）",5000,150,1,"輪椅","7"],
+ ["EC05","輪椅附加功能－B 款（具仰躺功能）",2000,150,1,"輪椅","8"],
+ ["EC06","輪椅附加功能－C 款（具空中傾倒功能）",4000,150,1,"輪椅","9"],
+ ["EC07","擺位系統－A 款（平面型輪椅背靠）",1000,0,1,"輪椅","26"],
+ ["EC08","擺位系統－B 款（曲面適形輪椅背靠）",6000,0,1,"輪椅","27"],
+ ["EC09","擺位系統－C 款（輪椅軀幹側支撐架）",3000,0,1,"輪椅","28"],
+ ["EC10","擺位系統－D 款（輪椅頭靠系統）",2500,0,1,"輪椅","29"],
+ ["EC11","電動輪椅（限租賃）",0,2500,0,"輪椅","14～21"],
+ ["EC12","電動代步車（限租賃）",0,1200,0,"輪椅","30"],
+ ["ED01","移位腰帶",1500,0,0,"移位","49"],
+ ["ED02","移位板",2000,0,0,"移位","51"],
+ ["ED03","人力移位吊帶",4000,0,0,"移位","52"],
+ ["ED04","移位滑墊－A 款",3000,0,0,"移位","53、54（可同時申請）"],
+ ["ED05","移位滑墊－B 款",8000,0,0,"移位","53、54（可同時申請）"],
+ ["ED06","移位轉盤",2000,0,0,"移位","50"],
+ ["ED07","移位機（懸吊式電動，含吊帶）",40000,2000,0,"移位","55、56"],
+ ["ED08","移位機吊帶",6000,0,0,"移位","57"],
+ ["EE01","電話擴音器",2000,0,0,"聽覺警示","86"],
+ ["EE02","電話閃光震動器",2000,0,0,"聽覺警示","87"],
+ ["EE03","火警閃光警示器",2000,0,0,"聽覺警示","90"],
+ ["EE04","門鈴閃光器",2000,0,0,"聽覺警示","88"],
+ ["EE05","無線震動警示器",2000,0,0,"聽覺警示","89"],
+ ["EF01","衣著用輔具",500,0,0,"生活","175"],
+ ["EF02","居家用生活輔具",500,0,0,"生活","177、178、179（可同時申請）"],
+ ["EF03","飲食用輔具",500,0,0,"生活","176"],
+ ["EG01","氣墊床－A 款",8000,300,1,"預防壓瘡","121、122"],
+ ["EG02","氣墊床－B 款",12000,500,1,"預防壓瘡","121、122"],
+ ["EG03","輪椅座墊－A 款（連通管型氣囊氣墊座－塑膠）",5000,0,1,"預防壓瘡","114～120"],
+ ["EG04","輪椅座墊－B 款（連通管型氣囊氣墊座－橡膠）",10000,0,1,"預防壓瘡","114～120"],
+ ["EG05","輪椅座墊－C 款（液態凝膠座墊）",10000,0,1,"預防壓瘡","114～120"],
+ ["EG06","輪椅座墊－D 款（固態凝膠座墊）",8000,0,1,"預防壓瘡","114～120"],
+ ["EG07","輪椅座墊－E 款（填充式氣囊氣墊座）",8000,0,1,"預防壓瘡","114～120"],
+ ["EG08","輪椅座墊－F 款（交替充氣型座墊）",5000,0,1,"預防壓瘡","114～120"],
+ ["EG09","輪椅座墊－G 款（量製型座墊）",10000,0,1,"預防壓瘡","114～120"],
+ ["EH01","居家用照顧床",8000,1000,0,"照顧床","123"],
+ ["EH02","居家用照顧床－附加功能 A 款（床面升降）",5000,200,0,"照顧床","124、125"],
+ ["EH03","居家用照顧床－附加功能 B 款（電動升降）",5000,500,0,"照顧床","126、127"],
+ ["EH04","爬梯機（單趟，限租賃）",0,700,0,"照顧床","132"],
+ ["EH05","爬梯機（每月，限租賃）",0,4000,0,"照顧床","132"],
+ ["FA22","固定式扶手（每 10 公分）",160,0,0,"無障礙","137"],
+ ["FA23","可動式扶手（單支）",3600,0,0,"無障礙","138"],
+ ["FA24","床邊扶手（單處）",1000,0,0,"無障礙","162"],
+ ["FA25","門檻斜角（單側）",1000,0,0,"無障礙","154"],
+ ["FA26","非固定式斜坡板 A 款（未達 90 公分）",3500,0,0,"無障礙","155"],
+ ["FA27","非固定式斜坡板 B 款（90 公分以上）",5000,0,0,"無障礙","156"],
+ ["FA28","非固定式斜坡板 C 款（120 公分以上）",7000,0,0,"無障礙","157"],
+ ["FA29","非固定式斜坡板 D 款（150 公分以上）",10000,0,0,"無障礙","158"],
+ ["FA30","改善高低差（10 公分以下，單處）",3500,0,0,"無障礙","140"],
+ ["FA31","改善高低差（20 公分以下，單處）",5000,0,0,"無障礙","141"],
+ ["FA32","改善高低差（30 公分以下，單處）",7000,0,0,"無障礙","142"],
+ ["FA33","改善高低差（超過 30 公分，單處）",10000,0,0,"無障礙","143"],
+ ["FA34","防滑地磚（單處）",6000,0,0,"無障礙","145"],
+ ["FA35","防滑措施（單處）",2000,0,0,"無障礙","159"],
+ ["FA08","反光貼條或消光處理（單處）",3000,0,0,"無障礙","160"],
+ ["FA36","隔間（每平方公尺，新增）",800,0,0,"無障礙","152"],
+ ["FA37","門簡易型（單處）",7000,0,0,"無障礙","135"],
+ ["FA38","門進階型（單處）",10000,0,0,"無障礙","136"],
+ ["FA39","截水槽（單處）",6000,0,0,"無障礙","139"],
+ ["FA13","水龍頭（單處，新增、改換）",3000,0,0,"無障礙","144"],
+ ["FA40","改善浴缸（單處，新增、改換、移除）",7000,0,0,"無障礙","146"],
+ ["FA15","改善洗臉台（單處，新增、改換、移除）",3000,0,0,"無障礙","147"],
+ ["FA41","改善馬桶（單處，新增、改換、移除）",5000,0,0,"無障礙","148"],
+ ["FA42","馬桶背靠（單處）",2000,0,0,"無障礙","149"],
+ ["FA17","壁掛式淋浴台（單處）",5000,0,0,"無障礙","153"],
+ ["FA18","改善流理台（單處，新增、改換）",15000,0,0,"無障礙","150"],
+ ["FA19","改善抽油煙機（單處，位置調整）",1000,0,0,"無障礙","151"],
+ ["FA43","移動式身體清洗槽－局部型",2000,0,0,"無障礙","163"],
+ ["FA44","移動式身體清洗槽－全身型",5000,0,0,"無障礙","164"]
+];
+const LTCMAP = Object.fromEntries(LTC.map(r=>[r[0],r]));
+const ENVDESC = {
+ FA22:"浴室、廁所、走道、玄關最常施作；依握持長度每 10 公分計算。",
+ FA23:"馬桶旁沒有牆時，改用可上掀的扶手。",
+ FA24:"床邊起身、站起用的扶手。",
+ FA25:"門檻兩側加斜角，減少絆倒與輪椅卡住。",
+ FA26:"短距離的可攜式斜坡板，依長度分 A 到 D 款。",
+ FA30:"消除出入口、通道、浴室等處的高低差，依高度分四級。",
+ FA34:"更換為防滑地磚。", FA35:"浴室、樓梯等易滑處的止滑處理。",
+ FA08:"台階邊緣貼反光條或處理反光地面，協助視力不佳者辨識高低差。",
+ FA36:"新增隔間牆，依牆面面積計算。",
+ FA37:"改變門片類型或增設門片，例如改成拉門。", FA38:"含門框施工的加寬、加高或移位。",
+ FA39:"浴室去除門檻時加裝截水槽，避免積水外流。",
+ FA13:"改成撥桿式、單閥式或感應式水龍頭。",
+ FA40:"新增、改換或移除浴缸；常見為移除浴缸改成淋浴空間。",
+ FA15:"讓輪椅能靠近使用的洗臉台，不含水龍頭。",
+ FA41:"更換馬桶或調整位置、高度；只換免治馬桶座不在補助範圍。",
+ FA42:"兼具支撐功能的馬桶背靠。",
+ FA17:"不用時可收起的壁掛式淋浴台。",
+ FA18:"降低或改造流理台，讓坐姿也能使用。", FA19:"配合流理台改造調整抽油煙機位置。",
+ FA43:"可在床上或椅上局部清洗的清洗槽。", FA44:"可包覆全身的移動式清洗槽，例如床上沐浴用。"
+};
+const DIS = [[1,"個人行動輔具","推車-一般型",6500,"6,500","3","甲類",1,[7],"重度以上肢體障礙者；如腦性麻痺患者"],[2,"個人行動輔具","推車-荷重型",12000,"12,000","3","甲類",1,[7],"重度以上肢體障礙者；如腦性麻痺患者"],[3,"個人行動輔具","推車-擺位型",28000,"28,000","3","甲類",1,[7],"重度以上肢體障礙者；如腦性麻痺患者"],[4,"個人行動輔具","輪椅-非輕量化量產型",3500,"3,500","3","不需評估",0,[1,2,7],"植物人；中度以上失智症者；平衡機能障礙者；肢體障礙者"],[5,"個人行動輔具","輪椅-輕量化量產型",4000,"4,000","3","不需評估",0,[1,2,7],"植物人；中度以上失智症者；平衡機能障礙者；肢體障礙者"],[6,"個人行動輔具","輪椅-客製型",9000,"9,000","3","甲類",1,[1,2,7],"植物人；中度以上失智症者；平衡機能障礙者；肢體障礙者"],[7,"個人行動輔具","輪椅附加功能-具利於移位功能",5000,"5,000","3","甲類",1,[1,2,7],"植物人；重度以上失智症者；重度以上平衡機能障礙者"],[8,"個人行動輔具","輪椅附加功能-具仰躺功能",2000,"2,000","3","甲類",1,[1,2,7],"植物人；重度以上失智症者；重度以上平衡機能障礙者"],[9,"個人行動輔具","輪椅附加功能-具空中傾倒功能",4000,"4,000","3","甲類",1,[1,2,7],"植物人；重度以上失智症者；重度以上平衡機能障礙者"],[10,"個人行動輔具","高活動型輪椅-基礎型",30000,"30,000","4","甲類",0,[7],"下肢重度以上肢體障礙者；具自力推行能力者"],[11,"個人行動輔具","高活動型輪椅-進階型",60000,"60,000","5","甲類",0,[7],"下肢重度以上肢體障礙者；具自力推行能力者"],[12,"個人行動輔具","手推圈啟動型動力輔助輪椅",50000,"50,000","5","甲類",0,[7],"下肢重度以上肢體障礙者；具自力推行能力者"],[13,"個人行動輔具","輪椅配件-後推式介護型動力套件",8000,"8,000","5","甲類",0,[1,2,7],"植物人；中度以上失智症者；平衡機能障礙者；重度以上肢體障礙者"],[14,"個人行動輔具","電動輪椅-基礎型",50000,"50,000","5","甲類",0,[7],"重度以上肢體障礙者"],[15,"個人行動輔具","電動輪椅-進階型",60000,"60,000","5","甲類",0,[7],"重度以上肢體障礙者"],[16,"個人行動輔具","電動輪椅配件-沙發型座椅",5000,"5,000","5","甲類",0,[7],"重度以上肢體障礙者"],[17,"個人行動輔具","電動輪椅配件-擺位型椅架",15000,"15,000","5","甲類",0,[7],"重度以上肢體障礙者"],[18,"個人行動輔具","電動輪椅配件-電動變換姿勢功能",10000,"10,000","5","甲類",0,[7],"重度以上肢體障礙者"],[19,"個人行動輔具","電動輪椅配件-特殊規格控制器",35000,"35,000","5","甲類",0,[7],"重度以上肢體障礙者"],[20,"個人行動輔具","電動輪椅配件-新車內建鋰系電池",6000,"6,000","5","甲類",0,[7],"重度以上肢體障礙者"],[21,"個人行動輔具","電動輪椅配件-控制器操作位置調整",5000,"5,000","5","甲類",0,[7],"重度以上肢體障礙者"],[22,"個人行動輔具","電動輪椅或電動代步車電池(非鋰系電池)-50安培小時(含)以上",5000,"5,000","2","不需評估",0,[],"符合本辦法申請電動輪椅或電動代步車資格者"],[23,"個人行動輔具","電動輪椅或電動代步車電池(非鋰系電池)-50安培小時以下",3000,"3,000","2","不需評估",0,[],"符合本辦法申請電動輪椅或電動代步車資格者"],[24,"個人行動輔具","電動輪椅或電動代步車電池(鋰系電池)-20安培小時或480瓦特小時(含)以上",12000,"12,000","4","不需評估",0,[],"符合本辦法申請電動輪椅或電動代步車資格者"],[25,"個人行動輔具","電動輪椅或電動代步車電池(鋰系電池)-20安培小時或480瓦特小時以下",8000,"8,000","4","不需評估",0,[],"符合本辦法申請電動輪椅或電動代步車資格者"],[26,"個人行動輔具","擺位系統-平面型輪椅背靠",1000,"1,000","3","甲類",1,[1,7],"植物人；重度以上肢體障礙者"],[27,"個人行動輔具","擺位系統-曲面適形輪椅背靠",13000,"13,000","3","甲類",1,[1,7],"植物人；重度以上肢體障礙者"],[28,"個人行動輔具","擺位系統-輪椅擺位架",1500,"1,500","3","甲類",1,[1,7],"植物人；重度以上肢體障礙者"],[29,"個人行動輔具","擺位系統-輪椅頭靠系統",2500,"2,500","3","甲類",1,[1,7],"植物人；重度以上肢體障礙者"],[30,"個人行動輔具","電動代步車",25000,"25,000","5","甲類",0,[4,5,6,7],"重度以上重要器官失去功能者；重度以上肢體障礙者"],[31,"個人行動輔具","行動輔具附加功能-完成搭配機動車輛使用之衝擊測試",3000,"3,000","不適用","不適用",0,[],"應為推車、輪椅、高活動型輪椅、手推圈啟動型動力輔助輪椅、電動輪椅或電動代步車之使用者"],[32,"個人行動輔具","特製機車-加裝輔助後輪特製車",65000,"65,000","6","不需評估",0,[2,7],"平衡機能障礙者；肢體障礙者"],[33,"個人行動輔具","特製機車-加裝差速器套件及輔助後輪特製車",78000,"78,000","6","不需評估",0,[2,7],"平衡機能障礙者；肢體障礙者"],[34,"個人行動輔具","特製機車-改裝輪椅直上式特製車",80000,"80,000","6","不需評估",0,[2,7],"平衡機能障礙者；肢體障礙者"],[35,"個人行動輔具","三輪機車",65000,"65,000","6","不需評估",0,[2,7],"平衡機能障礙者；肢體障礙者"],[36,"個人行動輔具","機車改裝-裝設輔助後輪",15000,"15,000","6","不需評估",0,[2,7],"平衡機能障礙者；肢體障礙者"],[37,"個人行動輔具","機車改裝-裝設差速器套件及輔助後輪",28000,"28,000","6","不需評估",0,[2,7],"平衡機能障礙者；肢體障礙者"],[38,"個人行動輔具","機車改裝-裝設輪椅直上裝置",30000,"30,000","6","不需評估",0,[2,7],"平衡機能障礙者；肢體障礙者"],[39,"個人行動輔具","機車改裝-油門或煞車改裝",6000,"6,000","6","不需評估",0,[2,7],"平衡機能障礙者；肢體障礙者"],[40,"個人行動輔具","特製機車改裝(裝設倒退輔助器)",8000,"8,000","6","不需評估",0,[2,7],"平衡機能障礙者；肢體障礙者"],[41,"個人行動輔具","汽車改裝-油門或煞車連桿",15000,"15,000","6","不需評估",0,[2,7],"平衡機能障礙者；肢體障礙者"],[42,"個人行動輔具","單支拐杖-量產型",500,"500","3","不需評估",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[43,"個人行動輔具","單支拐杖-客製型",1500,"1,500","5","甲類",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[44,"個人行動輔具","助行器-一般型",800,"800","3","不需評估",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[45,"個人行動輔具","助行器-輪管型或助起型(R型)",1200,"1,200","3","不需評估",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[46,"個人行動輔具","帶輪型助步車(助行椅)",3000,"3,000","3","甲類",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[47,"個人行動輔具","姿勢控制型助行器",8000,"8,000","3","甲類",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[48,"個人行動輔具","軀幹支撐型步態訓練器",18000,"18,000","5","甲類",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[49,"個人行動輔具","移位腰帶",1500,"1,500","3","甲類丁類",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[50,"個人行動輔具","移位轉盤",2000,"2,000","3","甲類丁類",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[51,"個人行動輔具","移位板",2000,"2,000","5","甲類丁類",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[52,"個人行動輔具","人力移位吊帶",4000,"4,000","3","甲類丁類",0,[1,7],"植物人；失智症者；肢體障礙者"],[53,"個人行動輔具","移位滑布",1000,"1,000","5","甲類丁類",0,[1,7],"植物人；失智症者；肢體障礙者"],[54,"個人行動輔具","躺式移位滑墊",6000,"6,000","5","甲類丁類",0,[1,7],"植物人；失智症者；肢體障礙者"],[55,"個人行動輔具","移位機-人力型",30000,"30,000","10","甲類丁類",0,[1,7],"植物人；失智症者；肢體障礙者"],[56,"個人行動輔具","移位機-電動型",60000,"60,000","10","甲類丁類",0,[1,7],"植物人；失智症者；肢體障礙者"],[57,"個人行動輔具","移位機吊帶",6000,"6,000","3","不需評估",0,[1,7],"植物人；失智症者；肢體障礙者"],[58,"個人行動輔具","視障用白手杖或杖頭",700,"700","2","不需評估",0,[2],"視覺障礙者"],[59,"溝通及資訊輔具-視覺相關輔具","收錄音機或隨身聽",1000,"1,000","3","不需評估",0,[2],"視覺障礙者"],[60,"溝通及資訊輔具-視覺相關輔具","聽書機",3500,"3,500","5","不需評估",0,[2],"視覺障礙者"],[61,"溝通及資訊輔具-視覺相關輔具","視障用點字手錶",3000,"3,000","3","不需評估",0,[2],"視覺障礙者"],[62,"溝通及資訊輔具-視覺相關輔具","視障用語音報時器",300,"300","3","不需評估",0,[2],"視覺障礙者"],[63,"溝通及資訊輔具-視覺相關輔具","特製眼鏡(含特製隱形眼鏡)",6000,"6,000","3","戊類",0,[2],"視覺障礙者；如角膜化學灼傷等"],[64,"溝通及資訊輔具-視覺相關輔具","角膜疾病類隱形眼鏡",10000,"10,000","3","依醫師診斷",0,[2],"視覺障礙者；如角膜化學灼傷等"],[65,"溝通及資訊輔具-視覺相關輔具","包覆式濾光眼鏡",4000,"4,000","2","甲類丁類戊類",0,[2],"視覺障礙者"],[66,"溝通及資訊輔具-視覺相關輔具","望遠鏡",3000,"3,000","4","甲類丁類戊類",0,[2],"視覺障礙者"],[67,"溝通及資訊輔具-視覺相關輔具","放大鏡-低倍率",400,"400","3","不需評估",0,[2],"視覺障礙者"],[68,"溝通及資訊輔具-視覺相關輔具","放大鏡-高倍率",2500,"2,500","3","甲類丁類戊類",0,[2],"視覺障礙者"],[69,"溝通及資訊輔具-視覺相關輔具","點字板",1000,"1,000","10","不需評估",0,[2],"視覺障礙者"],[70,"溝通及資訊輔具-視覺相關輔具","點字機(打字機)",32000,"32,000","7","甲類丁類戊類",0,[2],"視覺障礙者"],[71,"溝通及資訊輔具-視覺相關輔具","點字觸摸顯示器-20方以下",50000,"50,000","4","甲類丁類戊類",0,[2],"視覺障礙者；5歲以上；具點字辨識能力"],[72,"溝通及資訊輔具-視覺相關輔具","點字觸摸顯示器-20方(含)以上",70000,"70,000","4","甲類丁類戊類",0,[2],"視覺障礙者；5歲以上；具點字辨識能力"],[73,"溝通及資訊輔具-視覺相關輔具","可攜式擴視機",40000,"40,000","4","甲類丁類戊類",0,[2],"視覺障礙者"],[74,"溝通及資訊輔具-視覺相關輔具","桌上型擴視機",75000,"75,000","6","甲類丁類戊類",0,[2],"視覺障礙者"],[75,"溝通及資訊輔具-視覺相關輔具","視障用螢幕報讀軟體",12000,"12,000","4","甲類丁類戊類",0,[2],"視覺障礙者；5歲以上；具電腦操作能力"],[76,"溝通及資訊輔具-視覺相關輔具","視障用螢幕放大軟體",18000,"18,000","4","甲類丁類戊類",0,[2],"視覺障礙者；5歲以上；具電腦操作能力"],[77,"溝通及資訊輔具-視覺相關輔具","語音手機-簡易型",2000,"2,000","3","不需評估",0,[2],"視覺障礙者"],[78,"溝通及資訊輔具-視覺相關輔具","語音手機-智慧型或平板",8000,"8,000","3","甲類丁類戊類",0,[2],"視覺障礙者"],[79,"溝通及資訊輔具-聽覺相關輔具","傳真機",4000,"4,000","3","不需評估",0,[1,2,3],"語言機能障礙者；聽覺機能障礙者"],[80,"溝通及資訊輔具-聽覺相關輔具","行動手機-簡易型",2000,"2,000","3","不需評估",0,[1,2,3],"語言機能障礙者；聽覺機能障礙者"],[81,"溝通及資訊輔具-聽覺相關輔具","行動手機-具雙向即時影像傳輸功能型",8000,"8,000","3","甲類乙類丙類丁類",0,[1,2,3],"語言機能障礙者；聽覺機能障礙者"],[82,"溝通及資訊輔具-聽覺相關輔具","助聽器-簡易型",2000,"2,000","4","丙類",0,[2],"聽覺機能障礙者；中度以上視覺障礙者"],[83,"溝通及資訊輔具-聽覺相關輔具","助聽器-中階型",10000,"10,000","4","丙類",0,[2],"聽覺機能障礙者；中度以上視覺障礙者"],[84,"溝通及資訊輔具-聽覺相關輔具","助聽器-進階型",20000,"20,000","4","丙類",0,[2],"聽覺機能障礙者；中度以上視覺障礙者"],[85,"溝通及資訊輔具-聽覺相關輔具","助聽器-雙對側傳聲型",30000,"30,000","4","丙類",0,[2],"聽覺機能障礙者；中度以上視覺障礙者"],[86,"溝通及資訊輔具-聽覺相關輔具","電話擴音器",2000,"2,000","5","不需評估",0,[2],"聽覺機能障礙者"],[87,"溝通及資訊輔具-警示指示及信號輔具","電話閃光震動器",2000,"2,000","5","不需評估",0,[2],"聽覺機能障礙者"],[88,"溝通及資訊輔具-警示指示及信號輔具","門鈴閃光器",2000,"2,000","5","不需評估",0,[2],"聽覺機能障礙者"],[89,"溝通及資訊輔具-警示指示及信號輔具","無線震動警示器",2000,"2,000","5","不需評估",0,[2],"聽覺機能障礙者"],[90,"溝通及資訊輔具-警示指示及信號輔具","火警閃光警示器",2000,"2,000","5","不需評估",0,[2],"聽覺機能障礙者"],[91,"溝通及資訊輔具-警示指示及信號輔具","個人衛星定位器",9000,"9,000","2","甲類丁類",0,[1],"失智症者；自閉症者；智能障礙者；慢性精神病患者"],[92,"溝通及資訊輔具-發聲輔具","人工講話器-氣動式",2000,"2,000","1","不需評估",1,[3],"聲音機能或語言機能障礙者"],[93,"溝通及資訊輔具-發聲輔具","人工講話器-電動式",20000,"20,000","5","乙類",1,[3],"聲音機能或語言機能障礙者"],[94,"溝通及資訊輔具-溝通相關輔具","溝通輔具-無語音輸出之圖卡或設備",5000,"5,000","4","乙類",0,[1,2,3],"失智症者；智能障礙者；自閉症者；聲音機能或語言機能障礙者；聽覺機能障礙者；含腦性麻痺、腦傷、肌萎縮性脊髓側索硬化症、帕金森氏症、中風"],[95,"溝通及資訊輔具-溝通相關輔具","溝通輔具-低階固定版面型語音溝通器",7000,"7,000","4","乙類",0,[1,2,3],"失智症者；智能障礙者；自閉症者；聲音機能或語言機能障礙者；聽覺機能障礙者；含腦性麻痺、腦傷、肌萎縮性脊髓側索硬化症、帕金森氏症、中風"],[96,"溝通及資訊輔具-溝通相關輔具","溝通輔具-高階固定版面型語音溝通器",10000,"10,000","4","乙類",0,[1,2,3],"失智症者；智能障礙者；自閉症者；聲音機能或語言機能障礙者；聽覺機能障礙者；含腦性麻痺、腦傷、肌萎縮性脊髓側索硬化症、帕金森氏症、中風"],[97,"溝通及資訊輔具-溝通相關輔具","溝通輔具-具掃描功能固定版面型語音溝通器",20000,"20,000","4","乙類",0,[1,2,3],"失智症者；智能障礙者；自閉症者；聲音機能或語言機能障礙者；聽覺機能障礙者；含腦性麻痺、腦傷、肌萎縮性脊髓側索硬化症、帕金森氏症、中風"],[98,"溝通及資訊輔具-溝通相關輔具","溝通輔具-電腦使用語音溝通軟體",20000,"20,000","4","乙類",0,[1,2,3],"失智症者；智能障礙者；自閉症者；聲音機能或語言機能障礙者；聽覺機能障礙者；含腦性麻痺、腦傷、肌萎縮性脊髓側索硬化症、帕金森氏症、中風"],[99,"溝通及資訊輔具-溝通相關輔具","溝通輔具-平板使用語音溝通軟體",10000,"10,000","4","乙類",0,[1,2,3],"失智症者；智能障礙者；自閉症者；聲音機能或語言機能障礙者；聽覺機能障礙者；含腦性麻痺、腦傷、肌萎縮性脊髓側索硬化症、帕金森氏症、中風"],[100,"溝通及資訊輔具-溝通相關輔具","溝通輔具-動態版面型語音溝通器",20000,"20,000","4","乙類",0,[1,2,3],"失智症者；智能障礙者；自閉症者；聲音機能或語言機能障礙者；聽覺機能障礙者；含腦性麻痺、腦傷、肌萎縮性脊髓側索硬化症、帕金森氏症、中風"],[101,"溝通及資訊輔具-電腦輔具","溝通或電腦輔具用特殊開關",3000,"3,000","5","甲類乙類丁類",0,[7],"肢體障礙者；溝通或電腦輔具使用者"],[102,"溝通及資訊輔具-電腦輔具","電腦輔具用滑鼠鍵盤模擬器",3000,"3,000","5","甲類乙類丁類",0,[7],"肢體障礙者；無法操作一般滑鼠或鍵盤者"],[103,"溝通及資訊輔具-電腦輔具","電腦輔具-替代性滑鼠或鍵盤介面",8000,"8,000","5","甲類乙類丁類",0,[7],"肢體障礙者；無法操作一般滑鼠或鍵盤者"],[104,"溝通及資訊輔具-電腦輔具","電腦輔具-嘴控滑鼠",30000,"30,000","5","甲類乙類丁類",0,[7],"重度以上肢體障礙者"],[105,"溝通及資訊輔具-電腦輔具","電腦輔具-紅外線貼片感應滑鼠",35000,"35,000","5","甲類乙類丁類",0,[7],"重度以上肢體障礙者"],[106,"溝通及資訊輔具-電腦輔具","電腦輔具-陀螺儀動作感應滑鼠",35000,"35,000","5","甲類乙類丁類",0,[7],"重度以上肢體障礙者"],[107,"溝通及資訊輔具-電腦輔具","電腦輔具-眼控滑鼠",70000,"70,000","5","甲類乙類丁類",0,[7],"重度以上肢體障礙者"],[108,"溝通及資訊輔具-電腦輔具","溝通或電腦輔具用支撐固定器",5000,"5,000","5","甲類乙類丁類",0,[],"應符合溝通或電腦輔具之補助對象者"],[109,"身體、生理及生化試驗設備及材料","語音血壓計",2000,"2,000","3","不需評估",0,[2],"視覺障礙者；具獨立操作能力"],[110,"身體、肌力及平衡訓練輔具","直立式站立架",15000,"15,000","5","甲類",1,[1,7],"植物人；智能障礙者；肢體障礙者"],[111,"身體、肌力及平衡訓練輔具","前趴式站立架",18000,"18,000","5","甲類",1,[1,7],"植物人；智能障礙者；肢體障礙者"],[112,"身體、肌力及平衡訓練輔具","後仰式站立架或傾斜床-手動調整型",20000,"20,000","5","甲類",1,[1,7],"植物人；智能障礙者；肢體障礙者"],[113,"身體、肌力及平衡訓練輔具","後仰式站立架或傾斜床-電動調整型",25000,"25,000","5","甲類",1,[1,7],"植物人；智能障礙者；肢體障礙者"],[114,"預防壓瘡輔具","連通管氣囊輪椅座墊-基礎型",5000,"5,000","2","甲類",1,[],"已有壓傷（褥瘡）者"],[115,"預防壓瘡輔具","連通管氣囊輪椅座墊-橡膠材質基礎型",8000,"8,000","3","甲類",1,[],"已有壓傷（褥瘡）者"],[116,"預防壓瘡輔具","連通管氣囊輪椅座墊-橡膠材質分區型",11000,"11,000","3","甲類",1,[],"已有壓傷（褥瘡）者"],[117,"預防壓瘡輔具","液態凝膠輪椅座墊",8000,"8,000","2","甲類",1,[],"已有壓傷（褥瘡）者"],[118,"預防壓瘡輔具","固態凝膠輪椅座墊",8000,"8,000","5","甲類",1,[],"已有壓傷（褥瘡）者"],[119,"預防壓瘡輔具","填充式氣囊輪椅座墊",10000,"10,000","5","甲類",1,[],"已有壓傷（褥瘡）者"],[120,"預防壓瘡輔具","客製化適形泡棉輪椅座墊",8000,"8,000","3","甲類",1,[],"已有壓傷（褥瘡）者"],[121,"預防壓瘡輔具","氣墊床-基礎型",10000,"10,000","3","甲類",1,[],"肢體癱瘓無法翻身且無法自行坐起者；已有壓傷（褥瘡）者"],[122,"預防壓瘡輔具","氣墊床-進階型",14000,"14,000","3","甲類",1,[],"肢體癱瘓無法翻身且無法自行坐起者；已有壓傷（褥瘡）者"],[123,"住家家具及改裝組件","居家用照顧床",9000,"9,000","5","甲類",0,[],"肢體功能受限而翻身或坐起困難者"],[124,"住家家具及改裝組件","居家用照顧床附加功能-床板靠背段及腿段獨立抬升功能(電動調整)",3000,"3,000","5","甲類",0,[],"肢體功能受限而翻身或坐起困難者"],[125,"住家家具及改裝組件","居家用照顧床附加功能-床板高度調整功能(手動調整)",4000,"4,000","5","甲類",0,[],"肢體功能受限而翻身或坐起困難者"],[126,"住家家具及改裝組件","居家用照顧床附加功能-床板高度調整功能(電動調整)",6000,"6,000","5","甲類",0,[],"肢體功能受限而翻身或坐起困難者"],[127,"住家家具及改裝組件","居家用照顧床附加功能-床板高度調整功能(高升降行程電動調整)",9000,"9,000","5","甲類",0,[],"肢體功能受限而翻身或坐起困難者"],[128,"住家家具及改裝組件","擺位椅-基礎型",4000,"4,000","3","甲類",0,[7],"中度以上肢體障礙者；12歲以下"],[129,"住家家具及改裝組件","擺位椅-調整型",8000,"8,000","3","甲類",0,[7],"中度以上肢體障礙者；12歲以下"],[130,"住家家具及改裝組件","擺位椅-進階調整型",15000,"15,000","5","甲類",0,[7],"中度以上肢體障礙者；12歲以下"],[131,"住家家具及改裝組件","升降桌",6000,"6,000","5","甲類丁類",0,[7],"重度以上肢體障礙者"],[132,"住家家具及改裝組件","居家無障礙輔具-爬梯機",80000,"80,000","10","甲類丁類",0,[1,2,7],"植物人；平衡機能障礙者；肢體障礙者"],[133,"住家家","居家無障",80000,"80,000","10","甲類",0,[1,2,7],"植物人；平衡機能障礙者；肢體障礙者"],[134,"住家家具及改裝組件","居家無障礙修繕-固定式動力垂直升降平台",80000,"80,000","10","甲類丁類",0,[1,2,7],"植物人；平衡機能障礙者；肢體障礙者"],[135,"住家家具及改裝組件","居家無障礙修繕-門簡易型(單處)",7000,"7,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[136,"住家家具及改裝組件","居家無障礙修繕-門進階型(單處)",10000,"10,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[137,"住家家具及改裝組件","居家無障礙修繕-固定式扶手(每10公分)",160,"160","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[138,"住家家具及改裝組件","居家無障礙修繕-可動式扶手(單支)",3600,"3,600","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[139,"住家家具及改裝組件","居家無障礙修繕-截水槽(單處)",6000,"6,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[140,"住家家具及改裝組件","居家無障礙修繕-改善高低差10公分以下(單處)",3500,"3,500","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[141,"住家家具及改裝組件","居家無障礙修繕-改善高低差20公分以下(單處)",5000,"5,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[142,"住家家具及改裝組件","居家無障礙修繕-改善高低差30公分以下(單處)",7000,"7,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[143,"住家家具及改裝組件","居家無障礙修繕-改善高低差超過30公分(單處)",10000,"10,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[144,"住家家具及改裝組件","居家無障礙修繕-水龍頭(單處)(新增、改換)",3000,"3,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[145,"住家家具及改裝組件","居家無障礙修繕-防滑地磚(單處)",6000,"6,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[146,"住家家具及改裝組件","居家無障礙修繕-改善浴缸(單處)(新增、改換、移除-含原處填補)",7000,"7,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[147,"住家家具及改裝組件","居家無障礙修繕-改善洗臉台(槽)(單處)(新增、改換、移除-含原處填補)",3000,"3,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[148,"住家家具及改裝組件","居家無障礙修繕-改善馬桶(單處)(新增、改換、移除-含原處填補)",5000,"5,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[149,"住家家具及改裝組件","居家無障礙修繕-馬桶背靠(單處)",2000,"2,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[150,"住家家具及改裝組件","居家無障礙修繕-改善流理台(單處)(新增、改換)",15000,"15,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[151,"住家家具及改裝組件","居家無障礙修繕-改善抽油煙機(單處)(位置調整)",1000,"1,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[152,"住家家具及改裝組件","居家無障礙修繕-隔間(每平方公尺)(新增)",800,"800","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[153,"住家家具及改裝組件","居家無障礙修繕-壁掛式淋浴台(單處)",5000,"5,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[154,"住家家具及改裝組件","居家無障礙輔具-門檻斜角(單側)",1000,"1,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[155,"住家家具及改裝組件","居家無障礙輔具-非固定式斜坡板(未達90公分)",3500,"3,500","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[156,"住家家具及改裝組件","居家無障礙輔具-非固定式斜坡板(90公分以上)",5000,"5,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[157,"住家家具及改裝組件","居家無障礙輔具-非固定式斜坡板(120公分以上)",7000,"7,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[158,"住家家具及改裝組件","居家無障礙輔具-非固定式斜坡板(150公分以上)",10000,"10,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[159,"住家家具及改裝組件","居家無障礙輔具-防滑措施(單處)",2000,"2,000","3","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[160,"住家家具及改裝組件","居家無障礙輔具-反光貼條或消光處理(單處)",2000,"2,000","3","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[161,"住家家具及改裝組件","居家無障礙輔具-馬桶扶手(單處)",900,"900","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[162,"住家家具及改裝組件","居家無障礙輔具-床邊扶手(單處)",1000,"1,000","10","甲類丁類戊類",0,[1,2,4,5,6,7],"植物人；失智症者；智能障礙者；視覺障礙者；平衡機能障礙者；重要器官失去功能者；肢體障礙者"],[163,"個人照顧及保護輔具","移動式身體清洗槽-局部型",1200,"1,200","3","甲類丁類",0,[1,2,7],"植物人；失智症者；平衡機能障礙者；肢體障礙者"],[164,"個人照顧及保護輔具","移動式身體清洗槽-全身型",5000,"5,000","3","甲類丁類",0,[1,2,7],"植物人；失智症者；平衡機能障礙者；肢體障礙者"],[165,"個人照顧及保護輔具","頭護具",600,"600","2","不需評估",0,[1,2],"難治型；智能障礙者；平衡機能障礙者；張力低、平衡功能損傷或常發生癲癇之障礙者"],[166,"個人照顧及保護輔具","馬桶增高器",800,"800","3","不需評估",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[167,"個人照顧及保護輔具","沐浴椅(一般型)",900,"900","3","不需評估",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[168,"個人照顧及保護輔具","便盆椅(一般型)",1200,"1,200","3","不需評估",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[169,"個人照顧及保護輔具","沐浴椅或便盆椅附加功能-附輪",1000,"1,000","3","不需評估",0,[1,2,7],"失智症者；平衡機能障礙者；肢體障礙者"],[170,"個人照顧及保護輔具","沐浴椅或便盆椅附加功能-具利於移位之扶手",1000,"1,000","3","甲類",0,[1,2,7],"重度以上失智症者；重度以上平衡機能障礙者"],[171,"個人照顧及保護輔具","沐浴椅或便盆椅附加功能-具仰躺功能",1500,"1,500","3","甲類",0,[1,2,7],"重度以上失智症者；重度以上平衡機能障礙者"],[172,"個人照顧及保護輔具","沐浴椅或便盆椅附加功能-具空中傾倒功能",3500,"3,500","3","甲類",0,[1,2,7],"重度以上失智症者；重度以上平衡機能障礙者"],[173,"個人照顧及保護輔具","語音體溫計",1800,"1,800","3","不需評估",0,[2],"視覺障礙者；具獨立操作能力"],[174,"個人照顧及保護輔具","語音體重計",1000,"1,000","3","不需評估",0,[2],"視覺障礙者；具獨立操作能力"],[175,"個人照顧及保護輔具","衣著用輔具",500,"500","3","不需評估",0,[],"身心障礙者"],[176,"居家生活相關輔具","飲食用輔具",500,"500","3","不需評估",0,[],"身心障礙者"],[177,"居家生活相關輔具","居家用輔具",500,"500","3","不需評估",0,[],"身心障礙者"],[178,"居家生活相關輔具","物品裝置與處理輔具",500,"500","3","不需評估",0,[],"身心障礙者"],[179,"居家生活相關輔具","藥品處理輔具",500,"500","3","不需評估",0,[],"身心障礙者"],[180,"矯具及義具","部分手義肢",10000,"10,000","2","甲類",1,[7],"肢體障礙者；18歲以上"],[181,"矯具及義具","腕離斷義肢-美觀型",14000,"14,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[182,"矯具及義具","腕離斷義肢-功能型",42000,"42,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[183,"矯具及義具","肘下義肢-美觀型",35000,"35,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[184,"矯具及義具","肘下義肢-功能型",45000,"45,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[185,"矯具及義具","肘離斷義肢-美觀型",55000,"55,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[186,"矯具及義具","肘離斷義肢-功能型",65000,"65,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[187,"矯具及義具","肘上義肢-美觀型",55000,"55,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[188,"矯具及義具","肘上義肢-功能型",65000,"65,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[189,"矯具及義具","肩離斷義肢-美觀型",65000,"65,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[190,"矯具及義具","肩離斷義肢-功能型",75000,"75,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[191,"矯具及義具","肩胛骨離斷義肢",70000,"70,000","4","甲類",1,[7],"肢體障礙者；18歲以上"],[192,"矯具及義具","部分足義肢-基礎型",7000,"7,000","2","甲類",1,[7],"肢體障礙者；18歲以上"],[193,"矯具及義具","部分足義肢-功能型",15000,"15,000","2","甲類",1,[7],"肢體障礙者；18歲以上"],[194,"矯具及義具","踝離斷義肢",40000,"40,000","6","甲類",1,[7],"肢體障礙者；18歲以上"],[195,"矯具及義具","膝下義肢",40000,"40,000","6","甲類",1,[7],"肢體障礙者；18歲以上"],[196,"矯具及義具","膝離斷義肢",60000,"60,000","7","甲類",1,[7],"肢體障礙者；18歲以上"],[197,"矯具及義具","膝上義肢",60000,"60,000","7","甲類",1,[7],"肢體障礙者；18歲以上"],[198,"矯具及義具","髖離斷義肢",70000,"70,000","7","甲類",1,[7],"肢體障礙者；18歲以上"],[199,"矯具及義具","半骨盆切除義肢",70000,"70,000","7","甲類",1,[7],"肢體障礙者；18歲以上"],[200,"矯具及義具","義肢組件更換-義肢手套",8000,"8,000","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[201,"矯具及義具","義肢組件更換-手部裝置",10000,"10,000","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[202,"矯具及義具","義肢組件更換-義肢腳套",4500,"4,500","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[203,"矯具及義具","義肢組件更換-義肢腳掌組(基礎型)",4500,"4,500","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[204,"矯具及義具","義肢組件更換-義肢腳掌組(進階型)",8000,"8,000","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[205,"矯具及義具","義肢組件更換-膝關節",15000,"15,000","3","不需評估",1,[7],"肢體障礙者；18歲以上"],[206,"矯具及義具","義肢組件更換-髖關節",10000,"10,000","3","不需評估",1,[7],"肢體障礙者；18歲以上"],[207,"矯具及義具","義肢組件更換(踝離斷或膝下義肢)-硬式承筒或凝膠軟套",10000,"10,000","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[208,"矯具及義具","義肢組件更換(膝離斷或膝上義肢)-硬式承筒或凝膠軟套",15000,"15,000","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[209,"矯具及義具","義肢組件更換(髖離斷或半骨盆切除義肢)-硬式承筒",15000,"15,000","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[210,"矯具及義具","義肢組件更換(踝離斷或膝下義肢)-美觀泡棉",4000,"4,000","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[211,"矯具及義具","義肢組件更換(膝離斷或膝上義肢)-美觀泡棉",6000,"6,000","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[212,"矯具及義具","義肢組件更換(髖離斷或半骨盆切除義肢)-美觀泡棉",6000,"6,000","2","不需評估",1,[7],"肢體障礙者；18歲以上"],[213,"矯具及義具","踝足矯具-踝上矯具型",3000,"3,000","3","甲類",1,[7],"肢體障礙者"],[214,"矯具及義具","踝足矯具-固定型或金屬支架型",3500,"3,500","3","甲類",1,[7],"肢體障礙者"],[215,"矯具及義具","踝足矯具-關節型",4000,"4,000","3","甲類",1,[7],"肢體障礙者"],[216,"矯具及義具","膝踝足矯具",10000,"10,000","3","甲類",1,[7],"肢體障礙者"],[217,"矯具及義具","髖膝踝足矯具",12000,"12,000","3","甲類",1,[7],"肢體障礙者"],[218,"矯具及義具","下肢矯具配件-鞋具(托足鞋型)",1500,"1,500","3","甲類",1,[7],"肢體障礙者"],[219,"矯具及義具","下肢矯具配件-鞋具(皮鞋型)",4000,"4,000","3","甲類",1,[7],"肢體障礙者"],[220,"矯具及義具","肘矯具",1000,"1,000","3","甲類",1,[7],"肢體障礙者"],[221,"矯具及義具","膝矯具",1500,"1,500","3","甲類",1,[7],"肢體障礙者"],[222,"矯具及義具","髖矯具",6000,"6,000","5","甲類",1,[7],"肢體障礙者"],[223,"矯具及義具","脊柱矯具-支持性背架(基礎型)",4000,"4,000","5","甲類",1,[7],"肢體障礙者"],[224,"矯具及義具","脊柱矯具-支持性背架(量身訂製型)",10000,"10,000","5","甲類",1,[7],"肢體障礙者"],[225,"矯具及義具","脊柱矯具-脊柱側彎矯正背架",15000,"15,000","5","甲類",1,[7],"肢體障礙者"],[226,"矯具及義具","量身訂製特製鞋-楦頭修改(單腳)",5000,"5,000","2","甲類",0,[7],"肢體障礙者；先天性或後天疾病造成足部關節構造明顯異常者，若無法判定足部關節構造明顯異常者，須出示經骨科、復健科或免疫風濕專科醫師根據；市售鞋款無法滿足其合腳需求，而須量腳或取模製作者"],[227,"矯具及義具","量身訂製特製鞋-楦頭修改(雙腳)",6000,"6,000","2","甲類",0,[7],"肢體障礙者；先天性或後天疾病造成足部關節構造明顯異常者，若無法判定足部關節構造明顯異常者，須出示經骨科、復健科或免疫風濕專科醫師根據；市售鞋款無法滿足其合腳需求，而須量腳或取模製作者"],[228,"矯具及義具","量身訂製特製鞋-新製開楦(單腳)",12000,"12,000","2","甲類",0,[7],"肢體障礙者；先天性或後天疾病造成足部關節構造明顯異常者，若無法判定足部關節構造明顯異常者，須出示經骨科、復健科或免疫風濕專科醫師根據；市售鞋款無法滿足其合腳需求，而須量腳或取模製作者"],[229,"矯具及義具","量身訂製特製鞋-新製開楦(雙腳)",18000,"18,000","2","甲類",0,[7],"肢體障礙者；先天性或後天疾病造成足部關節構造明顯異常者，若無法判定足部關節構造明顯異常者，須出示經骨科、復健科或免疫風濕專科醫師根據；市售鞋款無法滿足其合腳需求，而須量腳或取模製作者"],[230,"矯具及義具","透明壓力面膜-不含矽膠內層",16000,"16,000","1","依醫師診斷",0,[8],"顏面損傷者"],[231,"矯具及義具","透明壓力面膜-含矽膠內層",18000,"18,000","1","依醫師診斷",0,[8],"顏面損傷者"],[232,"矯具及義具","假髮",20000,"20,000","4","依醫師診斷",0,[8],"顏面損傷者；因燒傷或外傷造成頭皮缺損而使頭髮無法重新生長者"],[233,"矯具及義具","義眼",10000,"10,000","5","依醫師診斷",1,[2,8],"視覺障礙者；顏面損傷者；小耳症患者"],[234,"矯具及義具","義鼻",13000,"13,000","3","依醫師診斷",0,[2,8],"視覺障礙者；顏面損傷者；小耳症患者"],[235,"矯具及義具","義耳",16000,"16,000","3","依醫師診斷",0,[2,8],"視覺障礙者；顏面損傷者；小耳症患者"],[236,"矯具及義具","義顎",29000,"29,000","3","依醫師診斷",0,[2,8],"視覺障礙者；顏面損傷者；小耳症患者"],[237,"矯具及義具","混和義臉-人造額片",13000,"13,000","3","依醫師診斷",0,[2,8],"視覺障礙者；顏面損傷者；小耳症患者"],[238,"矯具及義具","混和義臉-人造頰片",13000,"13,000","3","依醫師診斷",0,[2,8],"視覺障礙者；顏面損傷者；小耳症患者"],[239,"矯具及義具","混和義臉-人造眼窩",30000,"30,000","3","依醫師診斷",0,[2,8],"視覺障礙者；顏面損傷者；小耳症患者"],[240,"其他","人工電子耳",600000,"600,000","終身一次","乙類丙類併同相關專業團隊",0,[],"感覺神經性聽力障礙病史在5年以內，或感覺神經性聽力障礙病史超過5年且持續配戴助聽器者；如因成效不佳中斷配戴助聽器，中斷期；如屬先天性聽覺機能障礙者，經電腦斷層或核磁共振攝影確定至少具有1圈完整耳蝸存在且無其他手術禁忌者"],[241,"其他","人工電子耳語言處理設備更新",200000,"200,000","10","不需評估",0,[],"裝置人工電子耳之聽覺機能障礙者，其原裝置之人工電子耳語言處理設備機型因原廠停產致無法繼續使用者"],[242,"其他","人工電子耳配件",10000,"10,000","2","不需評估",0,[],"裝置人工電子耳之聽覺機能障礙者，其原裝置之人工電子耳配件損耗致無法繼續使用者"]];
+const DISMAP = Object.fromEntries(DIS.map(r=>[r[0],r]));
+const DISCLS = [...new Set(DIS.map(r=>r[1]))];
+function evText(ev){ if(ev==="不需評估") return "不需評估"; if(ev==="依醫師診斷") return "依醫師診斷"; if(ev==="不適用") return "—"; return "評估人員："+ev.replace(/類(?=.)/g,"類、"); }
+
+/* 身障八大類 */
+const DCAT = [
+ {n:1,t:"神經系統構造及精神、心智功能",ex:"植物人、失智症、智能障礙、自閉症、慢性精神疾病等。",
+  tip:"可申請的項目比想像中多：中度以上失智症者可申請輪椅、助行器、移位與沐浴如廁輔具；溝通輔具、個人衛星定位器也在範圍內。"},
+ {n:2,t:"眼、耳及相關構造與感官功能及疼痛",ex:"視覺障礙、聽覺機能障礙、平衡機能障礙。",
+  tip:"視障與聽障的專用輔具多集中在「溝通及資訊輔具」；平衡機能障礙者則可申請步行、移位、沐浴如廁與居家無障礙。"},
+ {n:3,t:"涉及聲音與言語構造及其功能",ex:"聲音機能或語言機能障礙，例如喉部切除、構音障礙。",
+  tip:"人工講話器為全額補助項目；溝通輔具需經乙類評估人員評估。"},
+ {n:4,t:"循環、造血、免疫與呼吸系統構造及其功能",ex:"重要器官失去功能者（心、肺等）。",
+  tip:"重度以上可申請電動代步車與居家無障礙；抽痰機、氧氣製造機等屬醫療輔具，向衛生局申請，並併入 2 年 4 項計算。"},
+ {n:5,t:"消化、新陳代謝與內分泌系統相關構造及其功能",ex:"重要器官失去功能者（消化、代謝相關）。",
+  tip:"可申請的生活輔具以居家無障礙與電動代步車（重度以上）為主，其餘多屬醫療範圍。"},
+ {n:6,t:"泌尿與生殖系統相關構造及其功能",ex:"重要器官失去功能者（腎臟、泌尿相關）。",
+  tip:"同第五類，以居家無障礙與電動代步車（重度以上）為主。"},
+ {n:7,t:"神經、肌肉、骨骼之移動相關構造及其功能",ex:"肢體障礙、中風、脊髓損傷、腦性麻痺、截肢等。",
+  tip:"品項最多：輪椅、電動輪椅、移位、步行、矯具與義肢、電腦輔具、居家無障礙。大額品項需輔具評估人員評估。"},
+ {n:8,t:"皮膚與相關構造及其功能",ex:"嚴重燒燙傷、顏面損傷等。",
+  tip:"透明壓力面膜、假髮與顏面義具只需醫師診斷證明；義眼為全額補助項目。"}
+];
+
+/* 輔具 ↔ 補助對應。lt: 長照碼；dis: 身障項次（數字）或「~文字」；smart: 長照第二組類別 */
+const SUB = {
+ d01:{lt:["EF03"],dis:[176]}, d02:{lt:["EF03"],dis:[176]}, d03:{lt:["EF03"],dis:[176]}, d04:{lt:["EF03"],dis:[176]},
+ d05:{lt:[],dis:[]},
+ d06:{lt:[],dis:[],note:"未列入一般補助項目，可洽輔具資源中心評估與試用。"},
+ d07:{lt:["EF02","EF03"],dis:[177,176]},
+ d08:{lt:["EF01"],dis:[175]}, d09:{lt:["EF01"],dis:[175]}, d10:{lt:["EF01","EF02"],dis:[175,177]}, d11:{lt:["EF01"],dis:[175]},
+ d12:{lt:[],dis:[]}, d13:{lt:[],dis:[]},
+ d14:{lt:["FA22","FA23"],dis:[137,138,161]},
+ d15:{lt:["EA01"],dis:[166,161]},
+ d16:{lt:["EA01"],dis:[168,169,170],smart:"沐浴排泄類"},
+ d17:{lt:["EA01","FA17","FA44"],dis:[167,169,171,172,153,164],smart:"沐浴排泄類"},
+ d18:{lt:["EF02","FA43"],dis:[177,163]},
+ d19:{lt:["FA35","FA34","FA08"],dis:[159,145,160]},
+ d20:{lt:["EH01","EH02","EH03"],dis:[123,124,125,126,127],smart:"居家照顧床類"},
+ d21:{lt:["EG01","EG02","EG03","EG04","EG05","EG06","EG07","EG08","EG09"],dis:[121,122,114,115,116,117,118,119,120],smart:"居家照顧床類（含氣墊床）"},
+ d22:{lt:["ED01","ED02","ED03","ED04","ED05","ED06","ED07","ED08"],dis:[49,50,51,52,53,54,55,56,57],smart:"移位類"},
+ d23:{lt:["FA24","FA23"],dis:[162,138],note:"電動起身椅多為自費；床邊扶手與可動式扶手可申請居家無障礙補助。"},
+ d24:{lt:[],dis:[],note:"一般擺位枕多為自費；輪椅擺位系統請見「輪椅坐姿擺位配件」。"},
+ d25:{lt:[],dis:[91],smart:"安全看視類",note:"身障的個人衛星定位器限第一類符合條件者；長照第二組可租賃安全看視類智慧輔具。"},
+ d26:{lt:[],dis:[]},
+ d27:{lt:["EF02"],dis:[179]},
+ d28:{lt:["FA25","FA26","FA27","FA28","FA29","FA30","FA31"],dis:[154,155,156,157,158,140,141]},
+ d29:{lt:["EB01","EB02"],dis:[42,43]}, d30:{lt:["EB01","EB02"],dis:[42,43]},
+ d31:{lt:["EB03"],dis:[44,45,47,48]}, d32:{lt:["EB04"],dis:[46]},
+ d33:{lt:[],dis:[213,214,215,218,219]},
+ d34:{lt:["EC01","EC02","EC03","EC04","EC05","EC06"],dis:[4,5,6,7,8,9,10,11,13],smart:"移動類"},
+ d35:{lt:["EC11","EC12"],dis:[14,15,12,30,16,17,18,19],smart:"移動類"},
+ d36:{lt:["EC07","EC08","EC09","EC10"],dis:[26,27,28,29]},
+ d37:{lt:["EH04","EH05"],dis:[132,133,134]},
+ d38:{lt:[],dis:[110,111,112,113]},
+ d39:{lt:["EE01"],dis:[80,77,86]},
+ d40:{lt:[],dis:[58,67,68,73,74,75,76,60,66]},
+ d41:{lt:[],dis:[]}, d42:{lt:[],dis:[]},
+ d43:{lt:[],dis:[94,95,96,97,98,99,100,92,93]},
+ d44:{lt:["EE01","EE02","EE03","EE04","EE05"],dis:[82,83,84,85,86,87,88,89,90]},
+ d45:{lt:[],dis:[]},
+ d46:{lt:[],dis:[101,102,103,108]},
+ d47:{lt:[],dis:[]}
+};
+const SUBF = {lt:"長照有補助", dis:"身障有補助", smart:"長照智慧租賃", self:"自費為主"};
+function subKinds(id){
+  const s = SUB[id] || {lt:[],dis:[]};
+  const k = [];
+  if(s.lt.length) k.push("lt");
+  if(s.dis.length) k.push("dis");
+  if(s.smart) k.push("smart");
+  if(!s.lt.length && !s.dis.length) k.push("self");
+  return k;
+}
+function ltcAmt(r, i){ i = i||ident; return r[4] ? r[2] : Math.floor(r[2]*RATE.ltc[i]); }
+function ltcRent(r){ return r[4] ? r[3] : Math.floor(r[3]*RATE.ltc[ident]); }
+function disAmt(r, i){ i = i||ident; return r[7] ? r[3] : Math.round(r[3]*RATE.dis[i]); }
+const FULL = '<span class="full-tag">各身分全額</span>';
+function hlL(c){ return LTCCLS[ident]===c ? ' hl' : ''; }
+function hlD(i){ const m = {gen:'gen',sub:'gen',mid:'mid',low:'low'}; return m[ident]===i ? ' hl' : ''; }
+const catLabel = cats => cats.length ? cats.map(n=>'第'+CNUM[n-1]+'類').join("、") : '不限類別';
+
+function subsidyHTML(id){
+  const s = SUB[id] || {lt:[],dis:[]};
+  let h = '';
+  if(s.lt.length){
+    h += '<div class="sub-box"><h4>長照 3.0（第一組：每 3 年 4 萬元）</h4><div class="tbl-wrap"><table><thead><tr><th>給付碼</th><th>項目</th><th class="num">給付上限</th><th class="num hl">'+IDN[ident]+'（長照'+LTCCLS[ident]+'）可補助</th><th class="num">租賃／月可補助</th></tr></thead><tbody>'+
+      s.lt.map(c=>{ const r = LTCMAP[c]; return '<tr><td class="code">'+r[0]+'</td><td>'+r[1]+(r[4]?FULL:'')+'</td><td class="num">'+(r[2]?fmt(r[2]):'限租賃')+'</td><td class="num hl">'+(r[2]?fmt(ltcAmt(r)):'—')+'</td><td class="num">'+(r[3]?fmt(ltcRent(r)):'—')+'</td></tr>'; }).join("")+
+      '</tbody></table></div></div>';
+  }
+  if(s.smart){
+    h += '<div class="sub-box smart"><h4>長照 3.0（第二組：智慧科技輔具全租賃）</h4><p>可對應「'+s.smart+'」。對應碼別 EI01～EI05。第二組每 3 年 6 萬元（含居家無障礙最高 2 萬元），與第一組擇一；租賃價由特約單位訂定，需經甲類輔具評估人員評估。</p></div>';
+  }
+  if(s.dis.length){
+    const rows = s.dis.filter(x=>typeof x==="number").map(x=>DISMAP[x]);
+    h += '<div class="sub-box dis"><h4>身心障礙者輔具補助（每 2 年 4 項為原則）</h4><div class="tbl-wrap"><table><thead><tr><th>項次</th><th>項目</th><th class="num">最高補助</th><th class="num hl">'+IDN[ident]+'可補助</th><th>年限</th><th>可申請類別與對象</th><th>評估</th></tr></thead><tbody>'+
+      rows.map(r=>'<tr><td class="code">'+r[0]+'</td><td>'+r[2]+(r[7]?FULL:'')+'</td><td class="num">'+fmt(r[3])+'</td><td class="num hl">'+fmt(disAmt(r))+'</td><td>'+r[5]+(/^\d+$/.test(r[5])?' 年':'')+'</td><td>'+catLabel(r[8])+'：'+r[9]+'</td><td>'+evText(r[6])+'</td></tr>').join("")+
+      '</tbody></table></div><p>長照與身障的相同項目，在最低使用年限內不能重複補助，可擇優申請。</p></div>';
+  }
+  if(!s.lt.length && !s.dis.length){
+    h += '<div class="sub-box none"><h4>目前多為自費</h4><p>'+(s.note || "未列入長照或身障輔具的補助項目，多為自費購買；可洽各縣市輔具資源中心詢問租借或回收再利用。")+'</p></div>';
+  } else if(s.note){
+    h += '<p class="note">'+s.note+'</p>';
+  }
+  return h;
+}
+
+/* ---------- 補助頁面 ---------- */
+function hlc(i){ return hlD(i); }
+function renderLTC(){
+  const E = LTC.filter(r=>r[0][0]==="E");
+  const groups = [...new Set(E.map(r=>r[5]))];
+  const EI = [
+   ["EI01","移位類","執行移轉位活動經常有困難，需使用輔助移轉位裝置者","電動或省力機械移位裝置，並具活動監控、生理數據記錄或異常事件警示功能"],
+   ["EI02","移動類","執行步行活動經常有困難，需使用電動輪椅、電動代步車或步行移動裝置者","具活動監控、雲端數據管理、危險偵測或異常事件通報功能"],
+   ["EI03","沐浴排泄類","活動與動作控制能力不佳、沐浴或排泄經常有困難者","協助沐浴或處理排泄物，並具監控或警示功能"],
+   ["EI04","居家照顧床類","長期臥床、翻身或坐起困難，或下肢與平衡不佳的高跌倒風險者","照顧床組、床墊、氣墊床、床架或床用感應墊，具離床警報、久臥或翻身提醒等異常通報"],
+   ["EI05","安全看視類","長期臥床、獨居、失智症者，或需生理、活動數據監控者","穿戴式、感應式或室內建置式設備與 APP；不補助手機、手錶等日常用品"]
+  ];
+  $("#view-ltc").innerHTML =
+  '<section class="panel"><h2>長照 3.0 輔具與居家無障礙補助</h2>'+
+  '<p>依《長期照顧服務申請及給付辦法》114 年 6 月 19 日修正（附表四、附表四之一自 115 年 7 月 1 日施行）。輔具服務與居家無障礙環境改善分成兩組，每 3 年擇一。</p>'+
+  '<div class="two"><div class="plan"><h3>第一組：傳統輔具</h3><div class="big-num">3 年 4 萬元</div><p>可使用附表四全部 E 碼輔具與 F 碼居家無障礙項目，部分品項可租賃。</p></div>'+
+  '<div class="plan p2"><h3>第二組：智慧科技輔具</h3><div class="big-num">3 年 6 萬元</div><p>可使用 EI01～EI05 智慧科技輔具（全租賃），以及 EA01、EB01～EB03 與 FA08～FA44；其中居家無障礙改善 3 年最多 2 萬元。需經甲類輔具評估人員依智慧科技輔具評估報告書評定。</p></div></div>'+
+  '<p class="note">115 年 6 月 30 日以前已用過第一組者，要從那次照顧計畫核定日起滿 3 年，才能改申請第二組。</p>'+
+  '<h3>誰可以申請</h3><ul><li>65 歲以上，或 55 歲以上原住民。</li><li>領有身心障礙證明者。</li><li>失智症者（115 年 1 月 1 日起不限年齡）。</li><li>評估期間符合健保署急性後期整合照護（PAC）計畫的收案對象。</li><li>以上需經照管中心評估為長照需要等級第 2 級以上。聘有外籍看護的家庭，輔具與居家無障礙仍可使用全額度。</li></ul>'+
+  '<h3>依長照身分別的補助比例</h3><p>長照的身分別和社福的低收、中低收不完全相同，要特別注意：</p><div class="tbl-wrap"><table><thead><tr><th>長照身分別</th><th>包含哪些人</th><th class="num">自付</th><th class="num">第一組 3 年最多補助</th></tr></thead><tbody>'+
+  '<tr'+(LTCCLS[ident]==="第一類"?' class="grp"':'')+'><td>第一類</td><td>列冊低收入戶、列冊中低收入戶，或符合中低收入老人生活津貼第一款資格者</td><td class="num">0%</td><td class="num">40,000</td></tr>'+
+  '<tr'+(LTCCLS[ident]==="第二類"?' class="grp"':'')+'><td>第二類</td><td>非第一類，但符合中低收入老人生活津貼第二款，或身心障礙者生活補助資格者</td><td class="num">10%</td><td class="num">36,000</td></tr>'+
+  '<tr'+(LTCCLS[ident]==="第三類"?' class="grp"':'')+'><td>第三類</td><td>一般戶</td><td class="num">30%</td><td class="num">28,000</td></tr></tbody></table></div>'+
+  '<p class="note">「免部分負擔」的項目（量身訂製輪椅、輪椅附加功能、擺位系統、氣墊床、輪椅座墊，本頁標示「各身分全額」），各類身分都以給付上限全額計算。購買價格低於上限時依實際金額；超過上限或超過額度的部分需自付。部分負擔金額小數點以下無條件捨去。</p>'+
+  '<h3>申請流程與規定</h3><ul><li>撥打 1966 或洽各縣市長期照顧管理中心，照專到府評估長照需要等級。</li><li>個案管理員擬定照顧計畫；需評估的品項由甲類輔具評估人員出具評估報告。</li><li>核定後才能購買、租賃或施工；居家無障礙限長照給付對象使用的空間，不含公共空間與毛胚屋，一般損壞或汰舊換新不補助。</li><li>領有身心障礙證明者，已依身障規定取得的相同項目，在最低使用年限內不能再用長照重複申請。</li></ul></section>'+
+  '<section class="panel"><h2>第一組：輔具給付項目（E 碼）</h2><div class="tbl-tools"><input id="ltcQ" type="search" placeholder="搜尋代碼或名稱，例如 EC、輪椅、氣墊床" aria-label="搜尋長照給付項目"></div>'+
+  '<div class="tbl-wrap"><table id="ltcTbl"><thead><tr><th>給付碼</th><th>項目</th><th class="num">購置上限</th><th class="num'+hlL("第三類")+'">第三類<br>一般戶</th><th class="num'+hlL("第二類")+'">第二類</th><th class="num'+hlL("第一類")+'">第一類<br>低收、中低收</th><th class="num">租賃／月上限</th><th>對應身障項次</th></tr></thead><tbody>'+
+  groups.map(g=>'<tr class="grp"><td colspan="8">'+g+'</td></tr>'+E.filter(r=>r[5]===g).map(r=>{
+    const c = i => r[2] ? fmt(ltcAmt(r,i)) : '—';
+    return '<tr><td class="code">'+r[0]+'</td><td>'+r[1]+(r[4]?FULL:'')+'</td><td class="num">'+(r[2]?fmt(r[2]):'限租賃')+'</td><td class="num'+hlL("第三類")+'">'+c("gen")+'</td><td class="num'+hlL("第二類")+'">'+c("sub")+'</td><td class="num'+hlL("第一類")+'">'+c("low")+'</td><td class="num">'+(r[3]?fmt(r[3]):'—')+'</td><td>'+r[6]+'</td></tr>';
+  }).join("")).join("")+
+  '</tbody></table></div><p class="note">規則摘要：輪椅 A、B、C 款只能擇一；輪椅附加功能需搭配 B 或 C 款；擺位系統 A、B 款擇一；電動輪椅與電動代步車擇一；照顧床附加功能需搭配 EH01；移位機吊帶限購置移位機 3 年後更換。居家無障礙 F 碼請見「居家無障礙」分頁。</p></section>'+
+  '<section class="panel"><h2>第二組：智慧科技輔具（EI 碼，全租賃）</h2><p>租賃價格由長照特約單位訂定並報地方主管機關備查，以月計算（半個月以下以半個月計）。居住在原住民族地區或離島者，租賃價格加計 20%，且免部分負擔、不扣額度。產品需有醫療器材許可或符合國家標準，APP 需通過資安檢測。</p>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>碼別</th><th>類別</th><th>適用對象</th><th>功能重點</th></tr></thead><tbody>'+
+  EI.map(r=>'<tr><td class="code">'+r[0]+'</td><td><strong>'+r[1]+'</strong></td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>').join("")+
+  '</tbody></table></div><p class="note">資料來源：衛福部 1966 長照專區〈衛福部修正發布長期照顧服務申請及給付辦法〉附件「修正長期照顧服務申請及給付辦法部分條文及附表」（114 年 11 月 12 日更新）。</p></section>';
+  $("#ltcQ").addEventListener("input", e=>filterTable("#ltcTbl", e.target.value));
+}
+function filterTable(sel, q){
+  q = q.trim().toLowerCase();
+  const rows = document.querySelectorAll(sel+" tbody tr");
+  rows.forEach(tr=>{ if(tr.classList.contains("grp")) return; tr.hidden = q && !tr.textContent.toLowerCase().includes(q); });
+  rows.forEach(tr=>{ if(!tr.classList.contains("grp")) return; let n = tr.nextElementSibling, any=false; while(n && !n.classList.contains("grp")){ if(!n.hidden) any=true; n = n.nextElementSibling; } tr.hidden = !any; });
+}
+
+let disCat = 7, disShowAny = true;
+function disRow(r){
+  const v = i => fmt(disAmt(r,i));
+  return '<tr><td class="code">'+r[0]+'</td><td>'+r[2]+(r[7]?FULL:'')+'</td><td class="num">'+fmt(r[3])+'</td><td class="num'+hlc("gen")+'">'+v("gen")+'</td><td class="num'+hlc("mid")+'">'+v("mid")+'</td><td class="num'+hlc("low")+'">'+v("low")+'</td><td>'+r[5]+(/^\d+$/.test(r[5])?' 年':'')+'</td><td>'+evText(r[6])+'</td><td>'+catLabel(r[8])+'：'+r[9]+'</td></tr>';
+}
+function disTable(list, id){
+  return '<div class="tbl-wrap"><table id="'+id+'"><thead><tr><th>項次</th><th>項目</th><th class="num">最高補助</th><th class="num'+hlc("gen")+'">一般戶</th><th class="num'+hlc("mid")+'">中低收</th><th class="num'+hlc("low")+'">低收</th><th>年限</th><th>評估</th><th>可申請類別與對象</th></tr></thead><tbody>'+
+    DISCLS.map(c=>{ const rs = list.filter(r=>r[1]===c); return rs.length ? '<tr class="grp"><td colspan="9">'+c+'（'+rs.length+' 項）</td></tr>'+rs.map(disRow).join("") : ''; }).join("")+
+    '</tbody></table></div>';
+}
+function renderDIS(){
+  const c = DCAT[disCat-1];
+  const mine = DIS.filter(r=>r[8].includes(disCat));
+  const any = DIS.filter(r=>!r[8].length);
+  const devs = DB.filter(x=>(SUB[x.id]||{dis:[]}).dis.some(n=>typeof n==="number" && (DISMAP[n][8].includes(disCat) || !DISMAP[n][8].length)));
+  $("#view-dis").innerHTML =
+  '<section class="panel"><h2>身心障礙者輔具費用補助</h2>'+
+  '<p>依《身心障礙者輔具費用補助辦法》（111 年 10 月 20 日修正，112 年 1 月 1 日施行）及附表基準表，共十大類 242 項。由戶籍地直轄市、縣市政府受理，多數委由區公所社會課或輔具中心辦理。</p>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>身分別</th><th class="num">補助比例</th><th>說明</th></tr></thead><tbody>'+
+  '<tr><td>一般戶</td><td class="num">50%</td><td>最高補助金額的一半</td></tr><tr><td>中低收入戶</td><td class="num">75%</td><td>最高補助金額的四分之三</td></tr><tr><td>低收入戶</td><td class="num">100%</td><td>最高補助金額全額</td></tr></tbody></table></div>'+
+  '<ul style="margin-top:12px"><li>每人每 2 年度以補助 4 項為原則；同一項目在最低使用年限內不得重複補助。依醫療輔具補助辦法取得的補助，也併入 4 項計算。</li>'+
+  '<li>基準表加註「※」的項目（本頁標示「各身分全額」），低收、中低收、一般戶都以最高補助金額全額補助，例如氣墊床、輪椅座墊、站立架、義肢與矯具。</li>'+
+  '<li>中央認定的罕見疾病，或醫師診斷為染色體異常、先天代謝異常及其他先天缺陷者，經評估有必要時，不受障別與程度限制。</li>'+
+  '<li>未經核定就先購買者不予補助；核定後 6 個月內完成購買並請款。輔具使用未達年限或已逾 4 項，但有急迫需求者，可提出專案申請。</li>'+
+  '<li>撥款以實際購買金額為限；縣市政府可增列項目或調高金額，請以戶籍地公告為準。</li></ul></section>'+
+  '<section class="panel"><h2>依障礙類別查詢</h2><p>身心障礙證明上的類別與 ICF 碼，決定可以申請哪些輔具。點選類別，下方會列出基準表中該類別可申請的全部項目。</p>'+
+  '<div class="cats" role="group" aria-label="障礙類別">'+DCAT.map(d=>'<button class="cat" type="button" data-c="'+d.n+'" aria-pressed="'+(d.n===disCat)+'"><b>第'+CNUM[d.n-1]+'類（'+DIS.filter(r=>r[8].includes(d.n)).length+' 項）</b><span>'+d.t+'</span></button>').join("")+'</div>'+
+  '<h3 id="disCatTitle">第'+CNUM[c.n-1]+'類：'+c.t+'</h3><p><strong>常見對象：</strong>'+c.ex+'</p><p class="note">'+c.tip+'</p>'+
+  (devs.length ? '<h3>資料庫中可對應的輔具（點選看操作與補助）</h3><div class="mini-list">'+devs.map(x=>'<button class="mini-card" type="button" data-open="'+x.id+'">'+esc(x.n)+'</button>').join("")+'</div>' : '')+
+  '<div class="tbl-tools" style="margin-top:14px"><input id="disQ" type="search" placeholder="在這個類別中搜尋，例如 輪椅、溝通、扶手" aria-label="搜尋身障補助項目">'+
+  '<button class="toggle" type="button" id="disAny" aria-pressed="'+disShowAny+'">同時顯示不限類別的項目（'+any.length+' 項）</button></div>'+
+  '<p>第'+CNUM[c.n-1]+'類可申請 <strong>'+mine.length+'</strong> 項'+(disShowAny?'，另有 '+any.length+' 項不限類別、依身體狀況或需求判定（如氣墊床、照顧床、生活輔具）':'')+'；目前以「'+IDN[ident]+'」標示。仍須符合每一項列出的 ICF 碼、障礙程度等條件。</p>'+
+  disTable(disShowAny ? mine.concat(any) : mine, "disTbl")+
+  '</section>';
+  const v = $("#view-dis");
+  v.querySelector(".cats").addEventListener("click", e=>{ const b = e.target.closest(".cat"); if(!b) return; disCat = +b.dataset.c; renderDIS(); const t = $("#disCatTitle"); if(t && t.scrollIntoView) t.scrollIntoView({block:"start"}); });
+  v.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click", ()=>openDrawer(b.dataset.open)));
+  $("#disQ").addEventListener("input", e=>filterTable("#disTbl", e.target.value));
+  $("#disAny").addEventListener("click", ()=>{ disShowAny = !disShowAny; renderDIS(); });
+}
+
+function renderENV(){
+  const F = LTC.filter(r=>r[0][0]==="F");
+  $("#view-env").innerHTML =
+  '<section class="panel"><h2>居家無障礙環境改善</h2>'+
+  '<p>扶手、斜坡、防滑、門檻、浴室改造等工程，長照與身障都可以申請，兩邊的項目已一一對應，但計算方式不同。共通原則：先由輔具評估人員評估、核定後才施工，並備妥屋主同意書（租屋者需房東同意）。</p>'+
+  '<div class="two"><div class="plan"><h3>長照 3.0</h3><ul><li>第一組：與輔具共用每 3 年 4 萬元額度。</li><li>第二組：6 萬元額度中，居家無障礙改善最高 2 萬元。</li><li>補助比例：第三類（一般戶）70%、第二類 90%、第一類（低收、中低收）100%。</li><li>第二組可用的無障礙項目為 FA08～FA44。</li><li>洽詢：1966、照管中心。</li></ul></div>'+
+  '<div class="plan"><h3>身心障礙</h3><ul><li>全戶最高總補助：低收入戶 60,000 元、中低收入戶 45,000 元、一般戶 30,000 元。</li><li>戶內身障者每多 1 人，上限增加 30%，最多到 1.5 倍。</li><li>每次申請的各項修繕與輔具，合計只算 1 項次。</li><li>同一改善處在最低使用年限內不可重複申請；洽詢戶籍地區公所、輔具中心。</li></ul></div></div>'+
+  '<h3>優先改善的順序</h3><ul><li>浴室與廁所：扶手、防滑、移除門檻加截水槽、壁掛式淋浴台、馬桶扶手。</li><li>床邊到廁所的動線：床邊扶手、改善高低差、門檻斜角、感應夜燈（自費）。</li><li>出入口：斜坡板、改善高低差、門加寬或改拉門。</li><li>廚房：降低流理台、撥桿式水龍頭，讓坐姿也能參與家務。</li></ul></section>'+
+  '<section class="panel"><h2>項目與金額對照</h2><p>目前以「'+IDN[ident]+'」標示（長照為'+LTCCLS[ident]+'）。長照採 115 年 7 月新制 F 碼；身障依基準表項次。</p><div class="tbl-wrap"><table><thead><tr><th>長照碼</th><th>項目</th><th>說明</th><th class="num">給付上限</th><th class="num hl">長照'+LTCCLS[ident]+'</th><th>身障項次</th><th class="num hl">身障'+IDN[ident]+'</th></tr></thead><tbody>'+
+  F.map(r=>{ const dn = +r[6]; const dr = DISMAP[dn]; const key = ENVDESC[r[0]] || (["FA27","FA28","FA29"].includes(r[0])?ENVDESC.FA26:["FA31","FA32","FA33"].includes(r[0])?ENVDESC.FA30:"");
+    return '<tr><td class="code">'+r[0]+'</td><td>'+r[1]+'</td><td>'+key+'</td><td class="num">'+fmt(r[2])+'</td><td class="num hl">'+fmt(ltcAmt(r))+'</td><td class="code">'+r[6]+'</td><td class="num hl">'+(dr?fmt(disAmt(dr)):'—')+'</td></tr>'; }).join("")+
+  '<tr><td class="code">—</td><td>馬桶扶手（單處）</td><td>身障才有的獨立項目。</td><td class="num">900</td><td class="num hl">—</td><td class="code">161</td><td class="num hl">'+fmt(disAmt(DISMAP[161]))+'</td></tr>'+
+  '</tbody></table></div><p class="note">身障居家無障礙可申請的類別：第一、二、四、五、六、七類中符合條件者（如植物人、失智症、智能障礙、視障、平衡機能障礙、重要器官失去功能、肢體障礙），評估人員為甲、丁、戊類。身障另有爬梯機、軌道式樓梯升降機、固定式動力垂直升降平台（各 80,000 元），不計入居家無障礙全戶上限。</p></section>';
+}
+
+function renderCMP(){
+  const rows = [
+   ["申請窗口","1966 長照專線、各縣市長期照顧管理中心","戶籍地區公所社會課、社會局（處）；輔具資源中心協助評估"],
+   ["資格","失能且符合長照對象（65 歲以上、55 歲以上原住民、失智、身障、PAC），長照需要等級第 2 級以上","領有身心障礙證明、最近一年居住國內超過 183 日，且符合基準表該項目的障礙類別與條件"],
+   ["額度","第一組每 3 年 4 萬元；或第二組智慧科技輔具全租賃每 3 年 6 萬元（含無障礙最高 2 萬），二擇一","每人每 2 年度 4 項為原則；每項有最高補助金額，不是總額制。居家無障礙另有全戶上限（3 萬／4.5 萬／6 萬）"],
+   ["補助比例","第一類（列冊低收、中低收）100%；第二類（領中低收入老人生活津貼第二款或身障生活補助）90%；第三類（一般戶）70%","低收入戶 100%、中低收入戶 75%、一般戶 50%（領生活補助但非列冊者仍算一般戶）"],
+   ["全額項目","免部分負擔：量身訂製輪椅（EC03）、輪椅附加功能（EC04～EC06）、擺位系統（EC07～EC10）、氣墊床與輪椅座墊（EG01～EG09）","基準表加註※者，例如推車、客製輪椅、擺位系統、站立架、氣墊床、座墊、人工講話器、義肢與矯具"],
+   ["購買或租賃","部分品項可租賃（含移位機每月 2,000 元）；電動輪椅、代步車、爬梯機限租賃；第二組智慧科技輔具全租賃","原則為購置補助"],
+   ["評估","照專到府評估；部分品項需輔具評估人員報告","依項目分為不需評估、依醫師診斷、甲到戊類評估人員；行動困難者可申請到宅評估"],
+   ["品項範圍","E 碼輔具 47 項、F 碼居家無障礙 29 項、EI 智慧科技輔具 5 類","242 項，涵蓋視覺、聽覺、溝通、電腦、矯具義肢、人工電子耳等；另有醫療輔具補助（衛生局）"],
+   ["共同原則","先核定、後購買或施工","先核定、後購買；核定後 6 個月內購置請款"]
+  ];
+  const pairs = [
+   ["輪椅、附加功能（EC01～EC06）","4～11","不可重複"],
+   ["電動輪椅（EC11）","14～21","不可重複"],
+   ["電動代步車（EC12）","30","不可重複"],
+   ["擺位系統（EC07～EC10）","26～29","不可重複"],
+   ["單支枴杖（EB01、EB02）","42、43","可同時申請"],
+   ["助行器（EB03）","44、45","不可重複"],
+   ["帶輪型助步車（EB04）","46","不可重複"],
+   ["移位腰帶、轉盤、移位板、吊帶、移位機（ED01～ED03、ED06～ED08）","49～52、55～57","不可重複"],
+   ["移位滑墊（ED04、ED05）","53、54","可同時申請"],
+   ["聽覺警示輔具（EE01～EE05）","86～90","不可重複"],
+   ["輪椅座墊、氣墊床（EG01～EG09）","114～122","不可重複"],
+   ["居家用照顧床與附加功能（EH01～EH03）","123～127","不可重複"],
+   ["爬梯機（EH04、EH05）","132","不可重複"],
+   ["居家無障礙修繕與設備（FA 碼）","135～160、162","同一處不可重複"],
+   ["移動式身體清洗槽（FA43、FA44）","163、164","不可重複"],
+   ["馬桶增高器、便盆椅或沐浴椅（EA01）","166～172","不可重複"],
+   ["衣著用、飲食用輔具（EF01、EF03）","175、176","購買品項不可重複"],
+   ["居家用生活輔具（EF02）","177～179","可同時申請"]
+  ];
+  $("#view-cmp").innerHTML =
+  '<section class="panel"><h2>長照與身障輔具補助比較</h2>'+
+  '<div class="tbl-wrap"><table><thead><tr><th style="width:9em">比較項目</th><th>長照 3.0</th><th>身心障礙</th></tr></thead><tbody>'+
+  rows.map(r=>'<tr><td><strong>'+r[0]+'</strong></td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>').join("")+
+  '</tbody></table></div></section>'+
+  '<section class="panel"><h2>同一項目可以兩邊都申請嗎？</h2><p>依「身障輔具現制與長照輔具新制對照表」，大多數對應項目在最低使用年限內只能擇一；少數可同時申請。</p>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>長照項目</th><th>身障項次</th><th>對應原則</th></tr></thead><tbody>'+
+  pairs.map(p=>'<tr><td>'+p[0]+'</td><td class="code">'+p[1]+'</td><td>'+(p[2].startsWith("可")?'<strong style="color:var(--teal)">'+p[2]+'</strong>':p[2])+'</td></tr>').join("")+
+  '</tbody></table></div>'+
+  '<h3>同時符合兩種資格時</h3><ul><li>依項目擇優申請，但同一項輔具在使用年限內不能兩邊重複領補助。</li><li>一般戶申請一般品項時，長照補助比例（70%）比身障（50%）高；中低收入戶在長照是第一類、全額補助，身障只有 75%。但長照有 3 年 4 萬元的總額限制。</li><li>身障的部分品項最高補助金額比長照高，例如氣墊床進階型 14,000 元、居家用照顧床 9,000 元、電動移位機 60,000 元，且「※」項目不分身分全額，申請前值得兩邊比較。</li><li>電動輪椅、擴視機、助聽器、溝通輔具、義肢矯具等，身障補助的品項較完整，也不占長照額度。</li><li>小額、多品項的生活輔具與居家無障礙改善，用長照額度通常較省事；身障的居家無障礙一次申請只算 1 項次。</li></ul>'+
+  '<h3>試算：一般戶需要電動輪椅</h3><p>長照只能租賃電動輪椅（每月上限 2,500 元，一般戶補助 70%，即每月 1,750 元，會持續占用 3 年 4 萬元額度；租賃已包含依評估加裝沙發型座椅、擺位型座椅或電動變換姿勢功能）；身障電動輪椅基礎型最高 50,000 元，一般戶補助 50%，即 25,000 元，且不占長照額度。</p>'+
+  '<p class="note">本頁為整理比較，實際資格、金額與流程以衛福部、各縣市政府與照管中心最新公告為準。</p></section>';
+}
+
+/* ---------- views ---------- */
+let curView = "db";
+function showView(v){
+  curView = v;
+  document.querySelectorAll(".vtab").forEach(b=>b.setAttribute("aria-selected", b.dataset.v===v));
+  document.querySelectorAll(".view").forEach(el=>el.hidden = el.id !== "view-"+v);
+  if(v==="ltc") renderLTC();
+  if(v==="dis") renderDIS();
+  if(v==="env") renderENV();
+  if(v==="cmp") renderCMP();
+}
+document.querySelector(".vtabs").addEventListener("click", e=>{ const b = e.target.closest(".vtab"); if(b) showView(b.dataset.v); });
+function setIdent(i){
+  ident = i; try{ localStorage.setItem("atdb-ident", i); }catch(e){}
+  document.querySelectorAll("#identSeg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.i===i));
+  if(curView!=="db") showView(curView);
+  if(current) openDrawer(current.id, true);
+}
+document.querySelector("#identSeg").addEventListener("click", e=>{ const b = e.target.closest("button"); if(b) setIdent(b.dataset.i); });
+
+/* ---------- state ---------- */
+const state = {dom:null, g:null, f:new Set(), s:new Set(), q:"", fav:false};
+let favs = new Set();
+try{ favs = new Set(JSON.parse(localStorage.getItem("atdb-fav")||"[]")); }catch(e){ favs = new Set(); }
+function saveFav(){ try{ localStorage.setItem("atdb-fav", JSON.stringify([...favs])); }catch(e){} }
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const gUrl = k => "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(k);
+const yUrl = k => "https://www.youtube.com/results?search_query=" + encodeURIComponent(k);
+const cleanName = n => n.replace(/[（）()／]/g," ").replace(/\s+/g," ").trim();
+const IC_G = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="2" fill="currentColor"/><path d="M4 18l5-5 4 4 3-3 4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+const IC_Y = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7l8 5-8 5z" fill="currentColor"/></svg>';
+
+function mediaLinks(kwG, kwY, small){
+  const c = small ? " small" : "";
+  return '<a class="mbtn gg'+c+'" href="'+gUrl(kwG)+'" target="_blank" rel="noopener">'+IC_G+'Google 看圖片</a>'+
+         '<a class="mbtn yt'+c+'" href="'+yUrl(kwY)+'" target="_blank" rel="noopener">'+IC_Y+'YouTube 看影片</a>';
+}
+
+/* ---------- filters UI ---------- */
+function buildStairs(){
+  const box = $("#stairs");
+  box.innerHTML = G.map((x,i)=>'<button class="step" type="button" data-g="'+(i+1)+'" aria-pressed="false" style="height:'+(38+i*15.5)+'%" title="'+esc(x.d)+'"><b>'+ROMAN[i]+'</b><span>'+x.s+'</span></button>').join("");
+  box.addEventListener("click", e=>{
+    const b = e.target.closest(".step"); if(!b) return;
+    const g = +b.dataset.g; state.g = state.g===g ? null : g; render();
+  });
+  $("#gmExplain").innerHTML = "<dl>"+G.map((x,i)=>"<dt>"+ROMAN[i]+"</dt><dd><strong>"+x.s+"</strong>："+x.d+"</dd>").join("")+"</dl><p class='stairs-note'>GMFCS 原為腦性麻痺兒童與青少年的分級工具，這裡借用作為行動能力的參考。</p>";
+  $("#gmToggle").addEventListener("click", e=>{
+    const open = $("#gmExplain").classList.toggle("open");
+    e.currentTarget.setAttribute("aria-expanded", open);
+    e.currentTarget.textContent = open ? "收起分級說明" : "看分級說明";
+  });
+}
+function buildFuncs(){
+  $("#funcs").innerHTML = Object.entries(F).map(([k,v])=>'<button class="chip" type="button" data-f="'+k+'" aria-pressed="false">'+v+'</button>').join("");
+  $("#funcs").addEventListener("click", e=>{
+    const b = e.target.closest(".chip"); if(!b) return;
+    const k = b.dataset.f; state.f.has(k) ? state.f.delete(k) : state.f.add(k); render();
+  });
+}
+function domainsHTML(counts){
+  let h = '<button class="dom all" type="button" data-d="" aria-pressed="'+(state.dom===null)+'"><span class="g">全部</span><span class="t">全部情境<small>'+counts.all+' 項</small></span></button>';
+  for(const [k,v] of Object.entries(DOM)){
+    h += '<button class="dom" type="button" data-d="'+k+'" style="--dc:'+v.c+'" aria-pressed="'+(state.dom===k)+'"><span class="g">'+k+'</span><span class="t">'+v.w+'<small>'+counts[k]+' 項</small></span></button>';
+  }
+  return h;
+}
+$("#domains").addEventListener("click", e=>{
+  const b = e.target.closest(".dom"); if(!b) return;
+  const d = b.dataset.d || null; state.dom = state.dom===d ? null : d; render();
+});
+
+function matches(x, skipDom){
+  if(!skipDom && state.dom && !x.d.includes(state.dom)) return false;
+  if(state.g && !x.g.includes(state.g)) return false;
+  if(state.f.size && !x.f.some(k=>state.f.has(k))) return false;
+  if(state.fav && !favs.has(x.id)) return false;
+  if(state.s.size){ const k = subKinds(x.id); if(![...state.s].some(z=>k.includes(z))) return false; }
+  if(state.q){
+    const hay = (x.n+x.s+x.k+x.f.map(k=>F[k]).join("")+x.t.map(t=>t.join("")).join("")).toLowerCase();
+    if(!state.q.toLowerCase().split(/\s+/).filter(Boolean).every(w=>hay.includes(w))) return false;
+  }
+  return true;
+}
+
+function gbar(g){
+  return '<span class="gbar-wrap">GMFCS <span class="gbar">'+[1,2,3,4,5].map(i=>'<i class="'+(g.includes(i)?"on":"")+'" style="height:'+(6+i*3)+'px"></i>').join("")+'</span></span>';
+}
+
+function render(){
+  // domain counts (ignore domain filter)
+  const pool = DB.filter(x=>matches(x,true));
+  const counts = {all:pool.length};
+  for(const k in DOM) counts[k] = pool.filter(x=>x.d.includes(k)).length;
+  $("#domains").innerHTML = domainsHTML(counts);
+  document.querySelectorAll(".step").forEach(b=>b.setAttribute("aria-pressed", +b.dataset.g===state.g));
+  document.querySelectorAll(".chip").forEach(b=>b.setAttribute("aria-pressed", state.f.has(b.dataset.f)));
+  $("#favOnly").setAttribute("aria-pressed", state.fav);
+  document.querySelectorAll("#subs .chip").forEach(b=>b.setAttribute("aria-pressed", state.s.has(b.dataset.s)));
+
+  const list = DB.filter(x=>matches(x,false));
+  $("#count").textContent = "找到 " + list.length + " 項輔具";
+  const act = [];
+  if(state.dom) act.push(state.dom+"・"+DOM[state.dom].w);
+  if(state.g) act.push("GMFCS "+ROMAN[state.g-1]);
+  if(state.f.size) act.push([...state.f].map(k=>F[k]).join("、"));
+  if(state.s.size) act.push([...state.s].map(k=>SUBF[k]).join("、"));
+  if(state.q) act.push("「"+state.q+"」");
+  if(state.fav) act.push("收藏");
+  $("#activeTxt").textContent = act.length ? "條件：" + act.join("／") : "目前顯示全部";
+
+  if(!list.length){
+    $("#grid").innerHTML = '<div class="empty"><p><strong>沒有符合所有條件的輔具。</strong><br>試著減少身體功能的勾選，或取消 GMFCS 分級。</p><button class="toggle" type="button" id="emptyClear">清除全部條件</button></div>';
+    $("#emptyClear").onclick = clearAll; return;
+  }
+  $("#grid").innerHTML = list.map(x=>{
+    const c = DOM[x.d[0]].c;
+    return '<button class="card" type="button" data-id="'+x.id+'" style="--dc:'+c+'">'+
+      (favs.has(x.id)?'<span class="star" aria-label="已收藏">★</span>':'')+
+      '<h3>'+esc(x.n)+'</h3><p class="sum">'+esc(x.s)+'</p>'+
+      '<div class="badges">'+subKinds(x.id).map(k=>'<span class="badge b-'+k+'">'+SUBF[k]+'</span>').join("")+'</div>'+
+      '<div class="tags">'+x.f.slice(0,4).map(k=>'<span class="tag">'+F[k]+'</span>').join("")+'</div>'+
+      '<div class="meta"><span class="doms">'+x.d.map(d=>'<span class="mini-dom" style="--dc:'+DOM[d].c+'" title="'+DOM[d].w+'">'+d+'</span>').join("")+'</span>'+
+      '<span class="ntype">'+x.t.length+' 種類</span>'+gbar(x.g)+'</div></button>';
+  }).join("");
+}
+$("#grid").addEventListener("click", e=>{
+  const c = e.target.closest(".card"); if(c) openDrawer(c.dataset.id);
+});
+
+let qTimer;
+$("#q").addEventListener("input", e=>{ clearTimeout(qTimer); qTimer = setTimeout(()=>{ state.q = e.target.value.trim(); render(); }, 150); });
+$("#favOnly").addEventListener("click", ()=>{ state.fav = !state.fav; render(); });
+function clearAll(){ state.dom=null; state.g=null; state.f.clear(); state.s.clear(); state.q=""; state.fav=false; $("#q").value=""; render(); }
+$("#clearAll").addEventListener("click", clearAll);
+
+/* ---------- drawer ---------- */
+let lastFocus = null, current = null;
+function openDrawer(id, keep){
+  const x = DB.find(d=>d.id===id); if(!x) return;
+  if(!keep) lastFocus = document.activeElement;
+  current = x;
+  const c = DOM[x.d[0]].c;
+  $("#dHead").style.setProperty("--dc", c);
+  $("#dHead").innerHTML =
+    '<span class="big" style="--dc:'+c+'">'+x.d[0]+'</span>'+
+    '<div><h2 id="dTitle">'+esc(x.n)+'</h2><p class="sub">'+x.d.map(d=>d+"・"+DOM[d].w).join("　")+'</p></div>'+
+    '<div class="d-actions"><button class="icon-btn fav" type="button" id="dFav" aria-pressed="'+favs.has(x.id)+'">'+(favs.has(x.id)?"★ 已收藏":"☆ 收藏")+'</button>'+
+    '<button class="icon-btn" type="button" id="dPrint">列印</button>'+
+    '<button class="icon-btn" type="button" id="dClose" aria-label="關閉">✕ 關閉</button></div>';
+  $("#dBody").innerHTML =
+    '<p class="d-sum">'+esc(x.s)+'</p>'+
+    '<dl class="facts"><dt>適用分級</dt><dd><div class="gfull">'+[1,2,3,4,5].map(i=>'<span class="'+(x.g.includes(i)?"on":"")+'" title="'+G[i-1].s+'">'+ROMAN[i-1]+'</span>').join("")+'</div></dd>'+
+    '<dt>對應功能</dt><dd><div class="tags">'+x.f.map(k=>'<span class="tag">'+F[k]+'</span>').join("")+'</div></dd></dl>'+
+    '<div class="media">'+mediaLinks(x.k, x.k, false)+'</div>'+
+    '<h3>種類與使用重點</h3>'+
+    '<div class="tabs" role="tablist">'+x.t.map((t,i)=>'<button class="tab" role="tab" type="button" id="tab'+i+'" aria-controls="tp'+i+'" aria-selected="'+(i===0)+'">'+esc(t[0])+'</button>').join("")+'</div>'+
+    x.t.map((t,i)=>{
+      const nm = cleanName(t[0]);
+      return '<section class="tpanel" role="tabpanel" id="tp'+i+'" aria-labelledby="tab'+i+'"'+(i===0?"":" hidden")+'>'+
+        '<h4>'+esc(t[0])+'</h4>'+
+        '<div class="blk op"><span class="k">操作方式</span><p>'+esc(t[1])+'</p></div>'+
+        '<div class="blk help"><span class="k">能幫什麼</span><p>'+esc(t[2])+'</p></div>'+
+        '<div class="blk care"><span class="k">注意事項</span><p>'+esc(t[3])+'</p></div>'+
+        '<div class="media">'+mediaLinks(nm+" 輔具", nm+" 使用方法", true)+'</div></section>';
+    }).join("")+
+    '<h3 style="margin-top:22px">補助資訊（'+IDN[ident]+'）</h3>'+subsidyHTML(x.id)+
+    '<p class="disclaimer">尺寸、高度與擺位因人而異，選購或租借前，建議由職能治療師、物理治療師或輔具評估人員協助評估與試用。</p>';
+  const st = $("#dBody").scrollTop;
+  if(!keep) $("#dBody").scrollTop = 0; else setTimeout(()=>{$("#dBody").scrollTop = st;},0);
+  $("#overlay").classList.add("open");
+  const dr = $("#drawer"); dr.classList.add("open"); dr.setAttribute("aria-hidden","false");
+  document.body.style.overflow = "hidden";
+  if(!keep) $("#dClose").focus();
+  $("#dClose").onclick = closeDrawer;
+  $("#dPrint").onclick = ()=>window.print();
+  $("#dFav").onclick = e=>{
+    favs.has(x.id) ? favs.delete(x.id) : favs.add(x.id); saveFav();
+    e.currentTarget.setAttribute("aria-pressed", favs.has(x.id));
+    e.currentTarget.textContent = favs.has(x.id) ? "★ 已收藏" : "☆ 收藏";
+    render();
+  };
+  $("#dBody").querySelector(".tabs").addEventListener("click", e=>{
+    const b = e.target.closest(".tab"); if(!b) return;
+    const i = b.id.replace("tab","");
+    $("#dBody").querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected", t===b));
+    $("#dBody").querySelectorAll(".tpanel").forEach(p=>p.hidden = p.id !== "tp"+i);
+  });
+}
+function closeDrawer(){
+  $("#overlay").classList.remove("open");
+  const dr = $("#drawer"); dr.classList.remove("open"); dr.setAttribute("aria-hidden","true");
+  document.body.style.overflow = "";
+  current = null;
+  if(lastFocus) lastFocus.focus();
+}
+$("#overlay").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && current) closeDrawer(); });
+
+/* ---------- theme ---------- */
+(function(){
+  let t = null; try{ t = localStorage.getItem("atdb-theme"); }catch(e){}
+  if(t) document.documentElement.setAttribute("data-theme", t);
+  $("#themeBtn").addEventListener("click", ()=>{
+    const cur = document.documentElement.getAttribute("data-theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = cur==="dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try{ localStorage.setItem("atdb-theme", next); }catch(e){}
+  });
+})();
+
+$("#subs").innerHTML = Object.entries(SUBF).map(([k,v])=>'<button class="chip" type="button" data-s="'+k+'" aria-pressed="false">'+v+'</button>').join("");
+$("#subs").addEventListener("click", e=>{ const b = e.target.closest(".chip"); if(!b) return; const k = b.dataset.s; state.s.has(k) ? state.s.delete(k) : state.s.add(k); render(); });
+document.querySelectorAll("#identSeg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.i===ident));
+buildStairs(); buildFuncs(); render();
+</script>
+</body>
+</html>
